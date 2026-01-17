@@ -19,10 +19,8 @@
     h2{margin:0 0 10px;font-size:22px;font-weight:900}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:820px){.grid{grid-template-columns:1fr}}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     select,input,textarea{
-      width:100%;
-      padding:12px 12px;border:1px solid var(--line);border-radius:12px;
+      width:100%;padding:12px 12px;border:1px solid var(--line);border-radius:12px;
       font-weight:800;outline:none
     }
     textarea{min-height:120px;font-weight:700;line-height:1.4}
@@ -34,10 +32,8 @@
     .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
     .chip{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
     .chip b{font-weight:900}
-    .chip button{background:#111827}
     .danger{background:#b91c1c}
-    .miniBtn{padding:10px 12px;border-radius:12px}
-    .k{font-weight:900}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   </style>
 </head>
 <body>
@@ -50,196 +46,182 @@
   <div class="card">
     <h1>Админ</h1>
     <div class="muted">
-      ✅ Здесь можно скрывать конкретные даты (чтобы они не отображались на сайте).  
-      ✅ При смене месяца скрытия автоматически сбрасываются (и есть кнопка сброса вручную).
+      Тут ты скрываешь “день/событие” (оно исчезает с сайта).  
+      В новый месяц скрытия сбрасываются автоматически (и события пересоздаются заново).
     </div>
   </div>
 
   <div class="grid">
     <div class="card">
-      <h2>Скрыть день</h2>
-      <div class="row">
-        <select id="showSel"></select>
-      </div>
+      <h2>Скрыть / Показать событие</h2>
+      <select id="eventSel"></select>
       <div class="row" style="margin-top:10px">
-        <input id="date" type="date">
+        <button id="hide">Скрыть</button>
+        <button id="show" style="background:#111827">Показать</button>
       </div>
-      <div class="row" style="margin-top:10px">
-        <button id="hide">Скрыть дату</button>
-        <button id="unhide" class="miniBtn" style="background:#111827">Показать дату</button>
+
+      <div class="row" style="margin-top:14px">
+        <button id="resetMonth" class="danger">Сбросить месяц (пересоздать события)</button>
       </div>
-      <div class="muted">Формат ключа скрытия: <span class="k">спектакль|YYYY-MM-DD</span></div>
+      <div class="muted">Эта кнопка обновляет список спектаклей на “сегодня → конец месяца”.</div>
 
       <div style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px">
-        <div class="row">
-          <button id="reset" class="danger">Сбросить скрытые даты (текущий месяц)</button>
-        </div>
-        <div class="muted">Если хочешь “обновить месяц с первого числа” — жмёшь сброс, и даты снова появятся.</div>
+        <h2 style="margin-bottom:6px">Заявки Support</h2>
+        <div id="tickets" class="muted">…</div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Скрытые даты</h2>
+      <h2>Скрытые</h2>
       <div id="hiddenList" class="list"></div>
     </div>
   </div>
 
   <div class="card">
-    <h2>Редактор спектаклей (быстро)</h2>
-    <div class="muted">Можно править тексты/актёров/описание. После сохранения обнови афишу.</div>
-    <div class="row" style="margin-top:10px">
-      <select id="editSel"></select>
+    <h2>Редактирование события</h2>
+    <div class="muted">Можно менять название/описание/постер/актёров у выбранного события.</div>
+
+    <div style="margin-top:10px">
+      <input id="title" placeholder="Название">
+    </div>
+    <div style="margin-top:10px">
+      <input id="poster" placeholder="Ссылка на постер">
+    </div>
+    <div style="margin-top:10px">
+      <textarea id="desc" placeholder="Описание (длинное)"></textarea>
+    </div>
+    <div style="margin-top:10px">
+      <textarea id="cast" placeholder="Актёры (каждая строка: Актёр - Роль)"></textarea>
     </div>
     <div class="row" style="margin-top:10px">
-      <input id="editTitle" placeholder="Название">
-    </div>
-    <div class="row" style="margin-top:10px">
-      <input id="editPoster" placeholder="Ссылка на постер (картинка)">
-    </div>
-    <div class="row" style="margin-top:10px">
-      <textarea id="editDesc" placeholder="Описание"></textarea>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <textarea id="editCast" placeholder="Актёры (каждая строка: Актёр - Роль)"></textarea>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <button id="saveShow">Сохранить спектакль</button>
+      <button id="save">Сохранить</button>
     </div>
   </div>
-
 </div>
 
 <script>
 const K = {
-  DATA:"THEATRE_DATA_V1",
-  HIDDEN_DAYS:"THEATRE_HIDDEN_DAYS_V1",
-  MONTH:"THEATRE_MONTH_MARK_V1",
+  EVENTS:"THEATRE_EVENTS_V2",
+  HIDDEN:"THEATRE_HIDDEN_EVENTS_V2",
+  SUPPORT:"THEATRE_SUPPORT_TICKETS_V1",
+  MONTH:"THEATRE_MONTH_MARK_V2",
 };
 
+function loadEvents(){ return JSON.parse(localStorage.getItem(K.EVENTS)||'{"events":[]}'); }
+function saveEvents(v){ localStorage.setItem(K.EVENTS, JSON.stringify(v)); }
+function getHidden(){ return JSON.parse(localStorage.getItem(K.HIDDEN)||"[]"); }
+function setHidden(arr){ localStorage.setItem(K.HIDDEN, JSON.stringify(arr)); }
 function yyyy_mm(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
-function resetIfNewMonth(){
-  const mark = localStorage.getItem(K.MONTH);
-  const cur = yyyy_mm();
-  if(mark !== cur){
-    localStorage.setItem(K.MONTH, cur);
-    localStorage.removeItem(K.HIDDEN_DAYS);
-  }
+
+const sel=document.getElementById("eventSel");
+let data = loadEvents();
+
+function formatRU(isoDate){
+  const [y,m,d]=isoDate.split("-");
+  return `${d}.${m}.${y}`;
 }
-function loadData(){ return JSON.parse(localStorage.getItem(K.DATA)); }
-function saveData(v){ localStorage.setItem(K.DATA, JSON.stringify(v)); }
-function getHidden(){ return JSON.parse(localStorage.getItem(K.HIDDEN_DAYS)||"[]"); }
-function setHidden(arr){ localStorage.setItem(K.HIDDEN_DAYS, JSON.stringify(arr)); }
 
-resetIfNewMonth();
-
-const data = loadData();
-const showSel = document.getElementById("showSel");
-const editSel = document.getElementById("editSel");
-
-function fillSelects(){
-  showSel.innerHTML="";
-  editSel.innerHTML="";
-  data.shows.forEach(s=>{
-    const o1=document.createElement("option");
-    o1.value=s.id; o1.textContent=s.title;
-    showSel.appendChild(o1);
-
-    const o2=document.createElement("option");
-    o2.value=s.id; o2.textContent=s.title;
-    editSel.appendChild(o2);
+function fillSelect(){
+  data = loadEvents();
+  sel.innerHTML="";
+  data.events.forEach(e=>{
+    const o=document.createElement("option");
+    o.value=e.id;
+    o.textContent = `${e.title} — ${formatRU(e.date)} ${e.time}`;
+    sel.appendChild(o);
   });
+  sel.onchange = loadEditor;
+  loadEditor();
 }
-fillSelects();
-
 function renderHidden(){
   const list=document.getElementById("hiddenList");
-  const arr=getHidden();
-  if(!arr.length){
-    list.innerHTML = `<div style="color:#6b7280;font-weight:700">Пока ничего не скрыто.</div>`;
-    return;
-  }
+  const hidden=getHidden();
+  if(!hidden.length){ list.innerHTML=`<div style="color:#6b7280;font-weight:700">Пока ничего не скрыто.</div>`; return; }
   list.innerHTML="";
-  arr.slice().reverse().forEach(key=>{
-    const [id, iso] = key.split("|");
-    const show = data.shows.find(x=>x.id===id);
+  hidden.slice().reverse().forEach(id=>{
+    const e=data.events.find(x=>x.id===id);
     const div=document.createElement("div");
     div.className="chip";
     div.innerHTML = `
-      <div><b>${show?show.title:id}</b><div style="color:#6b7280;font-weight:700">${iso}</div></div>
-      <button data-k="${key}">Удалить</button>
+      <div><b>${e?e.title:id}</b><div style="color:#6b7280;font-weight:700">${e?formatRU(e.date)+" "+e.time:""}</div></div>
+      <button data-id="${id}" style="background:#111827">Удалить</button>
     `;
     div.querySelector("button").onclick=()=>{
-      const a=getHidden().filter(x=>x!==key);
-      setHidden(a);
+      setHidden(getHidden().filter(x=>x!==id));
       renderHidden();
     };
     list.appendChild(div);
   });
 }
-renderHidden();
+
+function loadEditor(){
+  const id=sel.value;
+  const e=data.events.find(x=>x.id===id);
+  if(!e) return;
+  document.getElementById("title").value = e.title||"";
+  document.getElementById("poster").value = e.poster||"";
+  document.getElementById("desc").value = e.description||"";
+  document.getElementById("cast").value = (e.cast||[]).map(x=>`${x.actor} - ${x.role}`).join("\n");
+}
 
 document.getElementById("hide").onclick=()=>{
-  const id=showSel.value;
-  const iso=document.getElementById("date").value;
-  if(!iso){ alert("Выберите дату"); return; }
-  const key=`${id}|${iso}`;
+  const id=sel.value;
   const arr=getHidden();
-  if(!arr.includes(key)) arr.push(key);
+  if(!arr.includes(id)) arr.push(id);
   setHidden(arr);
   renderHidden();
   alert("Скрыто.");
 };
-
-document.getElementById("unhide").onclick=()=>{
-  const id=showSel.value;
-  const iso=document.getElementById("date").value;
-  if(!iso){ alert("Выберите дату"); return; }
-  const key=`${id}|${iso}`;
-  const arr=getHidden().filter(x=>x!==key);
-  setHidden(arr);
+document.getElementById("show").onclick=()=>{
+  const id=sel.value;
+  setHidden(getHidden().filter(x=>x!==id));
   renderHidden();
   alert("Показано.");
 };
 
-document.getElementById("reset").onclick=()=>{
-  if(confirm("Сбросить скрытые даты этого месяца?")){
-    localStorage.removeItem(K.HIDDEN_DAYS);
-    renderHidden();
-    alert("Сброшено.");
-  }
-};
+document.getElementById("save").onclick=()=>{
+  const id=sel.value;
+  const d=loadEvents();
+  const e=d.events.find(x=>x.id===id);
+  if(!e) return;
 
-/** Editor */
-function loadEditor(){
-  const id=editSel.value;
-  const s=data.shows.find(x=>x.id===id);
-  if(!s) return;
-  document.getElementById("editTitle").value = s.title || "";
-  document.getElementById("editPoster").value = s.poster || "";
-  document.getElementById("editDesc").value = s.description || "";
-  document.getElementById("editCast").value = (s.cast||[]).map(x=>`${x.actor} - ${x.role}`).join("\n");
-}
-editSel.onchange = loadEditor;
-loadEditor();
+  e.title = document.getElementById("title").value.trim() || e.title;
+  e.poster = document.getElementById("poster").value.trim() || e.poster;
+  e.description = document.getElementById("desc").value.trim() || e.description;
 
-document.getElementById("saveShow").onclick=()=>{
-  const id=editSel.value;
-  const s=data.shows.find(x=>x.id===id);
-  if(!s) return;
-
-  s.title = document.getElementById("editTitle").value.trim() || s.title;
-  s.poster = document.getElementById("editPoster").value.trim() || s.poster;
-  s.description = document.getElementById("editDesc").value.trim() || s.description;
-
-  const castLines = document.getElementById("editCast").value.split("\n").map(x=>x.trim()).filter(Boolean);
-  s.cast = castLines.map(line=>{
+  const castLines = document.getElementById("cast").value.split("\n").map(x=>x.trim()).filter(Boolean);
+  e.cast = castLines.map(line=>{
     const parts=line.split(" - ");
     return {actor:(parts[0]||"").trim(), role:(parts.slice(1).join(" - ")||"").trim()};
   });
 
-  saveData(data);
-  alert("Сохранено. Обновите афишу (index.html).");
+  saveEvents(d);
+  alert("Сохранено. Обнови страницу афиши (index.html).");
+  fillSelect();
 };
+
+document.getElementById("resetMonth").onclick=()=>{
+  if(!confirm("Пересоздать события текущего периода (сегодня → конец месяца) и сбросить скрытые?")) return;
+  localStorage.setItem(K.MONTH, yyyy_mm());
+  localStorage.removeItem(K.HIDDEN);
+  localStorage.removeItem(K.EVENTS);
+  alert("Готово. Открой index.html — события создадутся заново.");
+};
+
+function renderTickets(){
+  const t = JSON.parse(localStorage.getItem(K.SUPPORT)||"[]");
+  if(!t.length){
+    document.getElementById("tickets").textContent = "Заявок пока нет.";
+    return;
+  }
+  const last = t.slice(-5).reverse().map(x=>`• ${new Date(x.ts).toLocaleString("ru-RU")} — ${x.text}`).join("\n");
+  document.getElementById("tickets").textContent = last;
+  document.getElementById("tickets").style.whiteSpace="pre-wrap";
+}
+
+fillSelect();
+renderHidden();
+renderTickets();
 </script>
 </body>
 </html>
