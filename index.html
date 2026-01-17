@@ -118,6 +118,12 @@
   </div>
 
 <script>
+  // FORCE RESET (удаляет старые данные) + уводит от кэша
+const p = new URLSearchParams(location.search);
+if (p.get("reset") === "1") {
+  localStorage.clear();
+  location.replace("index.html?v=2");
+}
 const K = {
   EVENTS:"THEATRE_EVENTS_V2",
   BAL:"THEATRE_BALANCE_V1",
