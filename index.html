@@ -12,13 +12,14 @@
       --bg:#f3f4f6; --card:#fff; --text:#0b0b0c; --muted:#6b7280; --line:#e5e7eb;
       --shadow:0 18px 40px rgba(0,0,0,.12);
 
-      --sold:#8b93a6;     /* Недоступный (как серо-синий на скрине) */
-      --free:#d1d5db;     /* вспомогательный, почти не используется */
+      /* зал */
+      --unavail:#8b93a6;          /* Недоступный (серый) */
+      --p2500:#0f6b1d;            /* зелёный */
+      --p3500:#b455d6;            /* фиолетовый */
+      --p5000:#ff0000;            /* красный */
+      --p5500:#00ff00;            /* ярко-зелёный */
 
-      --p2500:#0f6b1d;    /* зелёный */
-      --p3500:#b455d6;    /* фиолетовый */
-      --p5000:#ff0000;    /* красный */
-      --p5500:#00ff00;    /* ярко-зелёный */
+      --btn:#0b0b0c;
     }
     *{box-sizing:border-box}
     body{
@@ -27,23 +28,30 @@
       background:linear-gradient(#0b0b0c 0 240px, var(--bg) 240px 100%);
       color:var(--text);
     }
+
+    /* header */
     .hero{padding:18px 14px 18px;display:flex;align-items:center;justify-content:center;gap:12px;color:#fff}
     .heroTitle{font-weight:900;letter-spacing:.06em;font-size:44px;text-transform:uppercase}
     .heroSm{width:54px;height:54px;border-radius:50%;background:#fbbf24;display:grid;place-items:center;color:#0b0b0c;font-weight:900;box-shadow:0 16px 30px rgba(0,0,0,.25);font-size:26px}
     .heroSub{text-align:center;color:#fff;opacity:.9;letter-spacing:.35em;font-weight:800;margin:-2px 0 12px}
+
     .wrap{max-width:980px;margin:0 auto;padding:0 12px 48px}
     .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
     .topbar{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px;background:#fff;border-bottom:1px solid var(--line)}
     .pill{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--text);text-decoration:none;font-weight:900;font-size:16px;cursor:pointer}
+
     .screenTitle{margin:0;padding:22px 18px;text-align:center;font-size:48px;font-weight:900;border-bottom:1px solid var(--line);background:#fff}
     .note{padding:10px 14px;color:var(--muted);font-weight:800;border-bottom:1px solid var(--line);background:#fff}
+
+    /* cards list */
     .list{display:flex;flex-direction:column}
     .item{display:grid;grid-template-columns:140px 1fr;gap:18px;padding:18px;background:#fff;border-top:1px solid var(--line);align-items:center}
     .item:first-child{border-top:none}
     .poster{width:140px;height:140px;border-radius:16px;overflow:hidden;box-shadow:0 14px 26px rgba(0,0,0,.18);background:#111}
     .poster img{width:100%;height:100%;object-fit:cover;display:block}
     .tTitle{font-size:40px;font-weight:900;line-height:1.02;margin:0 0 10px}
-    .tMeta{font-size:22px;font-weight:900;margin:0 0 14px}
+    .tMeta{font-size:18px;font-weight:900;margin:0 0 14px;color:#111}
+    .tMeta small{display:block;color:#6b7280;font-weight:800;margin-top:6px}
     .btn{
       width:min(520px,100%);height:74px;border:none;border-radius:14px;
       background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;font-weight:900;font-size:24px;
@@ -51,6 +59,7 @@
     }
     .btn:active{transform:scale(.99)}
 
+    /* event */
     .card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
     .eventHead{display:grid;grid-template-columns:160px 1fr;gap:18px;padding:18px;border-bottom:1px solid var(--line);background:#fff}
     .eventHead .poster{width:160px;height:160px;border-radius:18px}
@@ -61,19 +70,11 @@
     .kv b{font-weight:900}
     .desc{white-space:pre-wrap;color:#374151;font-size:20px;line-height:1.75}
 
-    /* Зал */
+    /* hall */
     .legend{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:#fff;font-weight:900}
     .lg{display:flex;gap:10px;align-items:center}
     .sq{width:18px;height:18px;border-radius:2px;background:#999}
-    .hallTitle{
-      margin:0;
-      padding:18px 18px;
-      text-align:center;
-      color:#fff;
-      background:linear-gradient(180deg,#1a1a1b,#000);
-      font-weight:900;
-      font-size:28px;
-    }
+    .hallTitle{margin:0;padding:18px 18px;text-align:center;color:#fff;background:linear-gradient(180deg,#1a1a1b,#000);font-weight:900;font-size:28px}
     .hall{padding:18px 18px 8px;background:#fff}
     .rows{display:flex;flex-direction:column;gap:12px;align-items:center}
     .row{display:flex;gap:10px;align-items:center}
@@ -81,30 +82,58 @@
     .seats{display:flex;gap:8px;flex-wrap:nowrap}
     .seat{
       width:30px;height:30px;border-radius:2px;
-      background:var(--sold);
+      background:var(--unavail);
       color:#fff;
-      display:grid;
-      place-items:center;
-      font-size:12px;
-      font-weight:900;
+      display:grid;place-items:center;
+      font-size:12px;font-weight:900;
       user-select:none;
-      cursor:pointer;
       box-shadow:0 2px 0 rgba(0,0,0,.12);
     }
-    .seat.na{cursor:not-allowed;filter:saturate(.8)}
-    .seat.sel{outline:3px solid #111827;outline-offset:1px}
-    .seat.p2500{background:var(--p2500)}
-    .seat.p3500{background:var(--p3500)}
-    .seat.p5000{background:var(--p5000)}
-    .seat.p5500{background:var(--p5500)}
+    .seat.na{cursor:not-allowed;filter:saturate(.85)}
+    .seat.sel{outline:3px solid #111827;outline-offset:1px;cursor:pointer}
+    .seat.p2500{background:var(--p2500);cursor:pointer}
+    .seat.p3500{background:var(--p3500);cursor:pointer}
+    .seat.p5000{background:var(--p5000);cursor:pointer}
+    .seat.p5500{background:var(--p5500);cursor:pointer}
 
     .stage{margin:14px 18px 12px;border-radius:14px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;text-align:center;font-weight:900;font-size:40px;padding:18px 12px}
     .footer{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 240px;gap:12px;align-items:center;background:#fff}
     .total{font-size:54px;font-weight:900}
+
     .form{padding:16px 18px 22px;border-top:1px solid var(--line);background:#fff}
     .field{margin:10px 0}
-    .field input{width:100%;padding:18px 16px;border:1px solid var(--line);border-radius:14px;font-size:18px;font-weight:800;outline:none}
+    .field input{
+      width:100%;
+      padding:18px 16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      font-size:18px;
+      font-weight:800;
+      outline:none;
+      background:#fff;
+    }
 
+    /* payment */
+    .payBrand{display:flex;justify-content:center;gap:12px;align-items:center;font-weight:900;font-size:42px;margin:18px 0 18px}
+    .payBrand span{background:#2563eb;color:#fff;padding:6px 12px;border-radius:12px}
+    .payCard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+    .payH1{margin:0 0 10px;font-weight:900;font-size:28px}
+    .paySum{font-weight:900;font-size:18px;margin:10px 0 6px}
+    .payMuted{color:var(--muted);font-weight:800;line-height:1.4}
+    .payBtn{
+      width:100%;
+      padding:16px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:900;
+      font-size:16px;
+      cursor:pointer;
+      margin-top:10px;
+    }
+    .payBtn.primary{background:#4f6cf7;color:#fff;border-color:#4f6cf7}
+
+    /* support */
     .supportBtn{
       position:fixed;right:18px;bottom:18px;width:78px;height:78px;border-radius:50%;border:none;cursor:pointer;
       background:radial-gradient(circle at 30% 30%, #60a5fa, #2563eb 55%, #1d4ed8 100%);
@@ -113,13 +142,30 @@
     }
     .supportBtn svg{width:36px;height:36px;fill:#fff}
 
+    .chat{
+      position:fixed;right:18px;bottom:106px;width:min(360px, calc(100vw - 36px));
+      background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.22);
+      overflow:hidden;z-index:9999;display:none;
+    }
+    .chatHeader{background:#0b0b0c;color:#fff;padding:12px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:900}
+    .chatHeader button{background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer}
+    .chatBody{padding:12px;max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .msg{padding:10px 12px;border-radius:14px;max-width:90%;font-size:14px;line-height:1.35}
+    .me{background:#111827;color:#fff;align-self:flex-end}
+    .bot{background:#f3f4f6;color:#111827;border:1px solid #e5e7eb}
+    .chatActions{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#fff}
+    .chatActions input{flex:1;padding:12px 12px;border:1px solid var(--line);border-radius:12px;outline:none;font-weight:800}
+    .chatActions button{padding:12px 14px;border:none;border-radius:12px;background:#0b0b0c;color:#fff;font-weight:900;cursor:pointer}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 12px}
+    .quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 10px;cursor:pointer;font-weight:900;font-size:12px}
+
     @media (max-width:560px){
       .heroTitle{font-size:40px}
       .screenTitle{font-size:44px}
       .item{grid-template-columns:130px 1fr}
       .poster{width:130px;height:130px}
-      .tTitle{font-size:36px}
-      .tMeta{font-size:20px}
+      .tTitle{font-size:34px}
+      .tMeta{font-size:16px}
       .btn{height:70px;font-size:22px}
       .eventHead{grid-template-columns:140px 1fr}
       .eventHead .poster{width:140px;height:140px}
@@ -138,23 +184,51 @@
 
   <div class="wrap" id="app"></div>
 
+  <!-- support -->
   <button class="supportBtn" id="supportBtn" title="Support">
     <svg viewBox="0 0 24 24"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.05.87 3.92 2.3 5.33L4.5 20.5l4.38-1.46c.98.29 2.03.46 3.12.46 4.97 0 9-3.58 9-8s-4.03-8-9-8zm-4 9h8a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2zm0-3h8a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/></svg>
   </button>
 
+  <div class="chat" id="chat">
+    <div class="chatHeader">
+      <div>Support</div>
+      <button id="chatClose">✕</button>
+    </div>
+    <div class="chatBody" id="chatBody"></div>
+    <div class="quick">
+      <button data-q="Как купить?">Как купить?</button>
+      <button data-q="Ошибка оплаты">Ошибка оплаты</button>
+      <button data-q="Нужен возврат">Нужен возврат</button>
+      <button data-q="Написать в Telegram">Написать в Telegram</button>
+    </div>
+    <div class="chatActions">
+      <input id="chatInput" placeholder="Напишите сообщение...">
+      <button id="chatSend">Отпр.</button>
+    </div>
+  </div>
+
 <script>
 /* =========================
-   STORAGE + LIVE MONTH
+   CONFIG
+========================= */
+// Поставь сюда свой Telegram support (если нужно)
+const TELEGRAM_SUPPORT_LINK = "https://t.me/your_support";
+
+/* =========================
+   STORAGE
 ========================= */
 const K = {
-  EVENTS: "AFISHA_EVENTS_MONTH_V4",
-  MONTH:  "AFISHA_MONTH_V4",
-  SOLD:   "AFISHA_SOLD_V4"
+  MONTH:  "AFISHA_MONTH_THEATRES_V1",
+  EVENTS: "AFISHA_EVENTS_THEATRES_V1",
+  AVAIL:  "AFISHA_AVAIL_THEATRES_V1",   // доступные места (цветные)
+  TICKETS:"AFISHA_TICKETS_V1"
 };
 
 const app = document.getElementById("app");
 
-/* ---- local date (NO UTC SHIFT) ---- */
+/* =========================
+   DATE (LOCAL, NO UTC SHIFT)
+========================= */
 function isoLocal(d){
   const y=d.getFullYear();
   const m=String(d.getMonth()+1).padStart(2,"0");
@@ -168,9 +242,17 @@ function ruDate(isoDate){
 function yyyy_mm(d=new Date()){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 }
-function daysInMonth(y, mIndex){
-  return new Date(y, mIndex+1, 0).getDate();
+function daysInMonth(y, mIndex){ return new Date(y, mIndex+1, 0).getDate(); }
+function rangeTodayToEndOfMonth(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  return {start,end};
 }
+
+/* =========================
+   RANDOM (SEEDED)
+========================= */
 function seededRand(str){
   let h=2166136261>>>0;
   for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
@@ -191,9 +273,39 @@ function escapeHtml(s){
 }
 
 /* =========================
-   REALISTIC DATA POOLS
+   THEATRES (3 real Moscow)
+========================= */
+const THEATRES = [
+  {
+    id:"mxt",
+    name:"МХТ им. А. П. Чехова",
+    address:"Москва, Камергёрский пер., 3",
+    seed:"MXT",
+    photo:"https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id:"vahtangov",
+    name:"Театр им. Евг. Вахтангова",
+    address:"Москва, ул. Арбат, 26",
+    seed:"VAHT",
+    photo:"https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id:"bolshoi",
+    name:"Большой театр",
+    address:"Москва, Театральная пл., 1",
+    seed:"BOL",
+    photo:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=70"
+  }
+];
+
+/* =========================
+   DATA POOLS (big enough)
 ========================= */
 const TIME_POOL = ["18:00","19:00","20:00","21:00","22:00"];
+const A = ["Тихая","Громкая","Последняя","Первая","Скрытая","Слепая","Живая","Чёрная","Белая","Красная","Синяя","Тонкая","Ночная","Дневная","Ранняя","Поздняя","Странная","Лёгкая","Тяжёлая","Светлая","Холодная","Тёплая","Невидимая","Случайная","Короткая","Длинная","Новая","Старая","Честная","Ложная","Пустая","Полная","Смелая","Робкая"];
+const N = ["линия","сцена","роль","пауза","комната","правда","ошибка","маска","тишина","память","вера","письмо","встреча","легенда","тень","мелодия","история","реплика","записка","шаг","выбор","сон","театр","занавес","рампа","галёрка","оркестр","кулисы","монолог","акт","эпилог"];
+const S = ["вчера","сегодня","завтра","перед занавесом","после аплодисментов","на седьмом ряду","в оркестровой яме","за кулисами","в свете рампы","без слов","в один акт","в два голоса","в три сцены","на пустой сцене","по краю тишины"];
 
 const DIRECTORS = ["Евгений Писарев","Илья Соколов","Марина Кузнецова","Александр Фомин","Никита Ланской","Виктория Волкова","Дмитрий Север","Елена Климова","Сергей Шевченко","Тимур Полянский"];
 const ARTISTS  = ["Андреас фон Шлиппе","Мария Волошина","Ольга Миронова","Софья Мартынова","Антон Громов","Екатерина Жданова","Марина Синицына","Ирина Селезнёва"];
@@ -209,15 +321,22 @@ const ACTORS = [
   "Анна Романова","Кирилл Лебедев","Ольга Селезнёва","Михаил Назаров","Павел Ильин",
   "Ксения Артемьева","Игорь Сафонов","Вера Степанова","Глеб Рязанов","Даниил Платонов",
   "Мария Волошина","Александр Фомин","Никита Ланской","Виктория Волкова","Елена Климова",
-  "Антон Громов","Николай Ветров","Алина Коваль","Марина Синицына"
+  "Антон Громов","Николай Ветров","Алина Коваль","Марина Синицына","Дарья Зайцева","Любовь Скирко"
 ];
 
 const ROLES = [
   "Печорин","Грушницкий","Вера","Мери","Астров","Соня","Елена Андреевна","Войницкий",
   "Фигаро","Граф","Графиня","Сюзанна","Лир","Глостер","Шут","Эдгар",
   "Рассказчик","Странник","Хранитель сцены","Тень","Он","Она","Ведущий","Гостья",
-  "Слуги просцениума","Музыкант","Суфлёр","Режиссёр в кадре"
+  "Слуги просцениума","Музыкант","Суфлёр","Режиссёр в кадре","Пианист","Смотритель"
 ];
+
+const THEMES = [
+  "выборе и цене выбора","памяти и вине","любви и упрямстве","страхе быть собой","правде, которую не говорят вслух",
+  "одиночестве в толпе","власти привычек","попытке начать заново","хрупкости доверия","силе прощения",
+  "надежде в конце сезона","случайной встрече","долгом молчании","прощании со сценой","возвращении домой"
+];
+const MOODS = ["нежная, но острая","парадоксально смешная","тихая и пронзительная","жёсткая и честная","светлая и нервная","строгая и тонкая"];
 
 const DESC_TEMPLATES = [
   ({title, theme, mood}) => `«${title}» — ${mood} спектакль о ${theme}.
@@ -233,36 +352,27 @@ const DESC_TEMPLATES = [
 Спектакль двигается как музыка: сначала лёгкий мотив, потом — напряжение,
 и в финале — точка, после которой хочется молчать ещё минуту.`
 ];
-const THEMES = [
-  "выборе и цене выбора","памяти и вине","любви и упрямстве","страхе быть собой","правде, которую не говорят вслух",
-  "одиночестве в толпе","власти привычек","попытке начать заново","хрупкости доверия","силе прощения",
-  "надежде в конце сезона","случайной встрече","долгом молчании","прощании со сценой","возвращении домой"
+
+/* театр-фото (прямые, без редиректов) */
+const SHOW_PHOTOS = [
+  "https://images.unsplash.com/photo-1485562569060-2eec283d3391?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1520697830682-bbb6e85e2b0d?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1521336575822-6da63fb45455?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=900&q=70",
+  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=70"
 ];
-const MOODS = ["нежная, но острая","парадоксально смешная","тихая и пронзительная","жёсткая и честная","светлая и нервная","строгая и тонкая"];
 
 /* =========================
-   UNIQUE TITLES FOR WHOLE MONTH (NO REPEATS)
+   MONTH DATA: 3 theatres, each has own unique shows
 ========================= */
 function generateUniqueTitles(count, r){
-  const A = [
-    "Тихая","Громкая","Последняя","Первая","Скрытая","Слепая","Живая","Чёрная","Белая","Красная","Синяя",
-    "Тонкая","Ночная","Дневная","Ранняя","Поздняя","Странная","Лёгкая","Тяжёлая","Светлая","Холодная","Тёплая",
-    "Невидимая","Случайная","Короткая","Длинная","Новая","Старая","Честная","Ложная"
-  ];
-  const N = [
-    "линия","сцена","роль","пауза","комната","правда","ошибка","маска","тишина","память","вера","письмо","встреча",
-    "легенда","тень","мелодия","афиша","история","реплика","записка","шаг","выбор","сон","театр","занавес",
-    "рампа","галёрка","оркестр","кулисы","монолог"
-  ];
-  const S = [
-    "вчера","сегодня","завтра","перед занавесом","после аплодисментов","на седьмом ряду","в оркестровой яме",
-    "за кулисами","в свете рампы","без слов","в один акт","в два голоса","в три сцены","на пустой сцене"
-  ];
-
   const used=new Set();
   const out=[];
   let tries=0;
-  while(out.length<count && tries<8000){
+  while(out.length<count && tries<12000){
     tries++;
     const base = `${pick(r,A)} ${pick(r,N)}`;
     const full = base + (r()<0.60 ? ` — ${pick(r,S)}` : "");
@@ -275,31 +385,15 @@ function generateUniqueTitles(count, r){
   return out;
 }
 
-/* =========================
-   THEATRE PHOTOS (MORE THEATRE-LIKE)
-   (Unsplash source with theatre keywords; sig fixes repetition)
-========================= */
-function theatrePoster(sig){
-  const keywords = [
-    "theatre,stage", "opera,stage", "theater,auditorium", "theatre,curtain", "theatre,seats",
-    "theater,lights", "opera,house", "theatre,performance", "stage,spotlight", "theatre,interior"
-  ];
-  const q = keywords[sig % keywords.length];
-  return `https://source.unsplash.com/900x900/?${encodeURIComponent(q)}&sig=${sig}`;
-}
-
-/* =========================
-   MONTH EVENTS (1..end of month), then filter (today..end)
-========================= */
-function ensureMonthEvents(){
+function ensureMonthData(){
   const key = yyyy_mm(new Date());
   const storedKey = localStorage.getItem(K.MONTH);
 
-  // new month -> rebuild + clear sold
   if(storedKey !== key){
     localStorage.setItem(K.MONTH, key);
     localStorage.removeItem(K.EVENTS);
-    localStorage.removeItem(K.SOLD);
+    localStorage.removeItem(K.AVAIL);
+    localStorage.removeItem(K.TICKETS);
   }
 
   if(localStorage.getItem(K.EVENTS)) return;
@@ -309,181 +403,92 @@ function ensureMonthEvents(){
   const m = now.getMonth();
   const total = daysInMonth(y, m);
 
-  const r = seededRand("MONTH|" + key);
-  const titles = generateUniqueTitles(total, r);
+  const data = { theatres: [] };
 
-  const events = [];
-  for(let day=1; day<=total; day++){
-    const d = new Date(y, m, day);
-    const dateISO = isoLocal(d);
+  THEATRES.forEach((t, ti)=>{
+    const r = seededRand("THEATRE|" + t.seed + "|" + key);
+    const titles = generateUniqueTitles(total, r);
 
-    const title = titles[day-1];
-    const time  = pick(r, TIME_POOL);
-    const poster = theatrePoster(day);
+    const shows = [];
+    for(let day=1; day<=total; day++){
+      const d = new Date(y, m, day);
+      const dateISO = isoLocal(d);
 
-    const about = {
-      director: pick(r, DIRECTORS),
-      artist:   pick(r, ARTISTS),
-      producer: pick(r, PRODUCERS),
-      music:    pick(r, MUSIC),
-      light:    pick(r, LIGHT),
-      sound:    pick(r, SOUND),
-      video:    pick(r, VIDEO),
-      assistant:pick(r, ASSIST),
-    };
+      const title = titles[day-1];
+      const time  = pick(r, TIME_POOL);
+      const poster = SHOW_PHOTOS[(day + ti*3) % SHOW_PHOTOS.length];
 
-    const castCount = 4 + Math.floor(r()*4); // 4..7
-    const actors = uniqPick(r, ACTORS, castCount);
-    const roles  = uniqPick(r, ROLES, castCount);
-    const cast = actors.map((a,i)=>({actor:a, role: roles[i] || pick(r, ROLES)}));
+      const about = {
+        director: pick(r, DIRECTORS),
+        artist:   pick(r, ARTISTS),
+        producer: pick(r, PRODUCERS),
+        music:    pick(r, MUSIC),
+        light:    pick(r, LIGHT),
+        sound:    pick(r, SOUND),
+        video:    pick(r, VIDEO),
+        assistant:pick(r, ASSIST),
+      };
 
-    const theme = pick(r, THEMES);
-    const mood  = pick(r, MOODS);
-    const descFn = pick(r, DESC_TEMPLATES);
-    const description = descFn({title, theme, mood});
+      const castCount = 4 + Math.floor(r()*4); // 4..7
+      const actors = uniqPick(r, ACTORS, castCount);
+      const roles  = uniqPick(r, ROLES, castCount);
+      const cast = actors.map((a,i)=>({actor:a, role: roles[i] || pick(r, ROLES)}));
 
-    events.push({
-      id: "e_" + dateISO,
-      title,
-      city:"Москва",
-      venue:"Москва, ул. Большая Садовая 6",
-      date: dateISO,
-      time,
-      poster,
-      about,
-      cast,
-      description
-    });
-  }
+      const theme = pick(r, THEMES);
+      const mood  = pick(r, MOODS);
+      const descFn = pick(r, DESC_TEMPLATES);
+      const description = descFn({title, theme, mood});
 
-  localStorage.setItem(K.EVENTS, JSON.stringify({events}));
-}
+      shows.push({
+        id: `${t.id}_${dateISO}`,
+        theatreId: t.id,
+        theatreName: t.name,
+        theatreAddress: t.address,
+        city:"Москва",
+        date: dateISO,
+        time,
+        title,
+        poster,
+        about,
+        cast,
+        description
+      });
+    }
 
-function liveEvents(){
-  ensureMonthEvents();
-  const {events} = JSON.parse(localStorage.getItem(K.EVENTS) || '{"events":[]}');
-  const todayISO = isoLocal(new Date()); // local today
-  return events.filter(e => e.date >= todayISO);
-}
-
-function findEvent(id){
-  const {events} = JSON.parse(localStorage.getItem(K.EVENTS) || '{"events":[]}');
-  return events.find(x=>x.id===id);
-}
-
-/* =========================
-   ROUTER (SPA)
-========================= */
-function route(){
-  const hash = location.hash || "#afisha";
-  const [page, param] = hash.split(":");
-  if(page === "#event") return renderEvent(param);
-  if(page === "#buy") return renderBuy(param);
-  if(page === "#reset"){
-    localStorage.removeItem(K.EVENTS);
-    localStorage.removeItem(K.SOLD);
-    location.hash = "#afisha";
-    return;
-  }
-  return renderAfisha();
-}
-window.addEventListener("hashchange", route);
-
-/* =========================
-   SCREENS
-========================= */
-function renderAfisha(){
-  const events = liveEvents();
-
-  app.innerHTML = `
-    <div class="panel">
-      <div class="topbar">
-        <div class="pill" onclick="location.hash='#afisha'">← Афиша</div>
-        <div class="pill" onclick="location.hash='#reset'">Сброс</div>
-      </div>
-      <div class="note">Показываем только с сегодняшнего дня до конца месяца. Завтра “вчера” исчезнет автоматически.</div>
-      <div class="screenTitle">Театр</div>
-      <div class="list" id="list"></div>
-    </div>
-  `;
-
-  const list = document.getElementById("list");
-  events.forEach(e=>{
-    const el = document.createElement("div");
-    el.className="item";
-    el.innerHTML = `
-      <div class="poster"><img alt="" src="${e.poster}"></div>
-      <div>
-        <div class="tTitle">${e.title}</div>
-        <div class="tMeta">${e.city},<br>${ruDate(e.date)}, ${e.time},</div>
-        <button class="btn">Купить</button>
-      </div>
-    `;
-    el.querySelector("button").onclick = ()=> location.hash = `#event:${e.id}`;
-    list.appendChild(el);
+    data.theatres.push({ ...t, shows });
   });
+
+  localStorage.setItem(K.EVENTS, JSON.stringify(data));
 }
 
-function renderEvent(id){
-  const e = findEvent(id);
-  if(!e){ location.hash="#afisha"; return; }
+function getData(){
+  ensureMonthData();
+  return JSON.parse(localStorage.getItem(K.EVENTS));
+}
 
-  const labels = {
-    director:"Режиссер-постановщик",
-    artist:"Художник-постановщик",
-    producer:"Продюсеры",
-    music:"Музыкальное оформление",
-    light:"Художник по освещению",
-    sound:"Звукорежиссер",
-    video:"Видео",
-    assistant:"Помощник режиссера",
-  };
+function showsForTheatre(theatreId){
+  const data = getData();
+  const t = data.theatres.find(x=>x.id===theatreId);
+  if(!t) return [];
+  const todayISO = isoLocal(new Date());
+  // только от сегодня до конца месяца
+  return t.shows.filter(s=>s.date >= todayISO);
+}
 
-  app.innerHTML = `
-    <div class="topbar" style="border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px">
-      <div class="pill" onclick="location.hash='#afisha'">← Афиша</div>
-      <div class="pill" onclick="location.hash='#buy:${e.id}'">Купить</div>
-    </div>
-
-    <div class="card">
-      <div class="eventHead">
-        <div class="poster"><img alt="" src="${e.poster}"></div>
-        <div>
-          <div class="tTitle">${e.title}</div>
-          <div class="tMeta">${e.city},<br>${ruDate(e.date)}, ${e.time}</div>
-          <button class="btn" id="goBuy">Купить</button>
-          <div class="hint">Переход на схему зала<br>→ выбор мест → покупка</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="secTitle">О событии:</div>
-        <div class="kv">
-          ${Object.entries(e.about).map(([k,v])=>`<div><b>${labels[k]||k}</b> — ${escapeHtml(v)}</div>`).join("")}
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="secTitle">Актёрский<br>состав:</div>
-        <div class="kv">
-          ${e.cast.map(x=>`<div><b>${escapeHtml(x.actor)}</b> - ${escapeHtml(x.role)}</div>`).join("")}
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="secTitle">Описание:</div>
-        <div class="desc">${escapeHtml(e.description)}</div>
-      </div>
-    </div>
-  `;
-  document.getElementById("goBuy").onclick = ()=> location.hash = `#buy:${e.id}`;
+function findShow(showId){
+  const data = getData();
+  for(const t of data.theatres){
+    const s = t.shows.find(x=>x.id===showId);
+    if(s) return s;
+  }
+  return null;
 }
 
 /* =========================
-   SEAT MAP EXACT SHAPE + COLORS + 85-90% OCCUPIED
-   - Grey = Недоступный
-   - Colored = доступный по цене
-   - Guarantee: in EACH row there is one adjacent pair available
+   HALL: exact layout + 85-90% occupied
+   - ONLY COLORED ARE AVAILABLE
+   - grey = Недоступный
+   - per row: guaranteed adjacent pair available (2 seats)
 ========================= */
 const HALL_LAYOUT = [
   {row:9, seats:13},
@@ -497,8 +502,8 @@ const HALL_LAYOUT = [
   {row:1, seats:13},
 ];
 
-// ценовой “рядовой” профиль (чтобы как на скрине были все цвета)
 function rowPriceTier(row){
+  // ближе к сцене дороже
   if(row<=1) return 5500;
   if(row===2) return 5000;
   if(row===3) return 3500;
@@ -514,66 +519,216 @@ function priceClass(p){
   return "";
 }
 
-function getSoldStore(){
-  return JSON.parse(localStorage.getItem(K.SOLD) || "{}");
+function getAvailStore(){
+  return JSON.parse(localStorage.getItem(K.AVAIL) || "{}");
 }
-function setSoldStore(v){
-  localStorage.setItem(K.SOLD, JSON.stringify(v));
+function setAvailStore(v){
+  localStorage.setItem(K.AVAIL, JSON.stringify(v));
 }
 
-// Generate availability map:
-// - total occupied 85-90% => available 10-15%
-// - we guarantee 1 pair per row (2 available seats per row) => 18 available / 127 = 14.17% (OK)
-// - all other seats are grey "Недоступный"
-// - pair position varies per event (seeded), so not одинаково
-function ensureAvailabilityForEvent(eventId){
-  const store = getSoldStore();
-  if(store[eventId]) return store[eventId];
+// generates available colored seats map (only available are stored)
+// Total seats: 127
+// Available always = 18 (2 adjacent per row) => occupied ~85.8%
+function ensureAvailForShow(showId){
+  const store = getAvailStore();
+  if(store[showId]) return store[showId];
 
-  const r = seededRand("AVAIL|" + eventId);
-  const avail = {}; // key: "row-seat" => price (available). All others are grey/unavailable.
+  const r = seededRand("AVAIL|" + showId);
+  const avail = {}; // "row-seat" => price
 
   HALL_LAYOUT.forEach(rowObj=>{
     const row = rowObj.row;
     const seats = rowObj.seats;
 
-    // choose pair start 1..seats-1
-    // also avoid extreme edges often (more realistic): 70% choose inside
+    // choose start 1..seats-1; more often inside
     let start;
-    if(seats > 3 && r() < 0.70){
+    if(seats>3 && r()<0.75){
       start = 2 + Math.floor(r()*(seats-2)); // 2..seats-1
-      if(start >= seats) start = seats-1;
+      if(start>=seats) start=seats-1;
     } else {
       start = 1 + Math.floor(r()*(seats-1));
     }
 
     const p = rowPriceTier(row);
-
     avail[`${row}-${start}`] = p;
     avail[`${row}-${start+1}`] = p;
   });
 
-  store[eventId] = avail;
-  setSoldStore(store);
+  store[showId] = avail;
+  setAvailStore(store);
   return avail;
 }
 
-function renderBuy(id){
-  const e = findEvent(id);
-  if(!e){ location.hash="#afisha"; return; }
+/* =========================
+   ROUTER (SPA)
+========================= */
+function route(){
+  const hash = location.hash || "#theatres";
+  const [page, param] = hash.split(":");
+  if(page === "#theatre") return renderTheatre(param);
+  if(page === "#show") return renderShow(param);
+  if(page === "#buy") return renderBuy(param);
+  if(page === "#pay") return renderPay(param);     // param = showId|sum|seatsCSV|fio|phone|email
+  if(page === "#admin") return renderAdmin();      // hidden (not linked)
+  return renderTheatres();
+}
+window.addEventListener("hashchange", route);
 
-  const avail = ensureAvailabilityForEvent(e.id);
+/* =========================
+   SCREENS
+========================= */
+function renderTheatres(){
+  const data = getData();
+
+  app.innerHTML = `
+    <div class="panel">
+      <div class="topbar">
+        <div class="pill" style="cursor:default">Театры</div>
+        <div class="pill" onclick="openSupport()">Support</div>
+      </div>
+      <div class="note">Выберите театр → спектакли (сегодня → конец месяца).</div>
+      <div class="screenTitle">Москва</div>
+      <div class="list" id="list"></div>
+    </div>
+  `;
+
+  const list = document.getElementById("list");
+  data.theatres.forEach(t=>{
+    const el = document.createElement("div");
+    el.className="item";
+    el.innerHTML = `
+      <div class="poster"><img loading="lazy" alt="" src="${t.photo}"></div>
+      <div>
+        <div class="tTitle" style="font-size:34px">${escapeHtml(t.name)}</div>
+        <div class="tMeta">
+          ${escapeHtml(t.address)}
+          <small>Нажмите, чтобы открыть афишу</small>
+        </div>
+        <button class="btn">Открыть</button>
+      </div>
+    `;
+    el.querySelector("button").onclick = ()=> location.hash = `#theatre:${t.id}`;
+    list.appendChild(el);
+  });
+}
+
+function renderTheatre(theatreId){
+  const data = getData();
+  const theatre = data.theatres.find(x=>x.id===theatreId);
+  if(!theatre){ location.hash="#theatres"; return; }
+
+  const shows = showsForTheatre(theatreId);
+
+  app.innerHTML = `
+    <div class="panel">
+      <div class="topbar">
+        <div class="pill" onclick="location.hash='#theatres'">← Театры</div>
+        <div class="pill" onclick="openSupport()">Support</div>
+      </div>
+      <div class="note"><b>${escapeHtml(theatre.name)}</b><br>${escapeHtml(theatre.address)}</div>
+      <div class="screenTitle">Афиша</div>
+      <div class="list" id="list"></div>
+    </div>
+  `;
+
+  const list = document.getElementById("list");
+  if(!shows.length){
+    list.innerHTML = `<div style="padding:18px;color:#6b7280;font-weight:900">Нет доступных дат на остаток месяца.</div>`;
+    return;
+  }
+
+  shows.forEach(s=>{
+    const el = document.createElement("div");
+    el.className="item";
+    el.innerHTML = `
+      <div class="poster"><img loading="lazy" alt="" src="${s.poster}"></div>
+      <div>
+        <div class="tTitle">${escapeHtml(s.title)}</div>
+        <div class="tMeta">${escapeHtml(s.city)},<br>${ruDate(s.date)}, ${escapeHtml(s.time)},</div>
+        <button class="btn">Купить</button>
+      </div>
+    `;
+    el.querySelector("button").onclick = ()=> location.hash = `#show:${s.id}`;
+    list.appendChild(el);
+  });
+}
+
+function renderShow(showId){
+  const s = findShow(showId);
+  if(!s){ location.hash="#theatres"; return; }
+
+  const labels = {
+    director:"Режиссер-постановщик",
+    artist:"Художник-постановщик",
+    producer:"Продюсеры",
+    music:"Музыкальное оформление",
+    light:"Художник по освещению",
+    sound:"Звукорежиссер",
+    video:"Видео",
+    assistant:"Помощник режиссера",
+  };
+
+  app.innerHTML = `
+    <div class="topbar" style="border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px">
+      <div class="pill" onclick="location.hash='#theatre:${escapeHtml(s.theatreId)}'">← Афиша</div>
+      <div class="pill" onclick="openSupport()">Support</div>
+    </div>
+
+    <div class="card">
+      <div class="eventHead">
+        <div class="poster"><img loading="lazy" alt="" src="${s.poster}"></div>
+        <div>
+          <div class="tTitle">${escapeHtml(s.title)}</div>
+          <div class="tMeta" style="font-size:18px">
+            ${escapeHtml(s.theatreName)}<br>
+            <span style="color:#6b7280;font-weight:900">${escapeHtml(s.theatreAddress)}</span><br><br>
+            ${escapeHtml(s.city)}, ${ruDate(s.date)}, ${escapeHtml(s.time)}
+          </div>
+          <button class="btn" id="goBuy">Купить</button>
+          <div class="hint">Переход на схему зала<br>→ выбор мест → оплата</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="secTitle">О событии:</div>
+        <div class="kv">
+          ${Object.entries(s.about).map(([k,v])=>`<div><b>${labels[k]||k}</b> — ${escapeHtml(v)}</div>`).join("")}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="secTitle">Актёрский<br>состав:</div>
+        <div class="kv">
+          ${s.cast.map(x=>`<div><b>${escapeHtml(x.actor)}</b> - ${escapeHtml(x.role)}</div>`).join("")}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="secTitle">Описание:</div>
+        <div class="desc">${escapeHtml(s.description)}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("goBuy").onclick = ()=> location.hash = `#buy:${s.id}`;
+}
+
+function renderBuy(showId){
+  const s = findShow(showId);
+  if(!s){ location.hash="#theatres"; return; }
+
+  const avail = ensureAvailForShow(s.id);
   const selected = new Set();
 
   app.innerHTML = `
     <div class="topbar" style="border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px">
-      <div class="pill" onclick="location.hash='#event:${e.id}'">← Назад</div>
-      <div class="pill" onclick="location.hash='#afisha'">Афиша</div>
+      <div class="pill" onclick="location.hash='#show:${escapeHtml(s.id)}'">← Назад</div>
+      <div class="pill" onclick="openSupport()">Support</div>
     </div>
 
     <div class="card">
       <div class="legend">
-        <div class="lg"><span class="sq" style="background:var(--sold)"></span> Недоступный</div>
+        <div class="lg"><span class="sq" style="background:var(--unavail)"></span> Недоступный</div>
         <div class="lg"><span class="sq" style="background:var(--p2500)"></span> 2500 руб.</div>
         <div class="lg"><span class="sq" style="background:var(--p3500)"></span> 3500 руб.</div>
         <div class="lg"><span class="sq" style="background:var(--p5000)"></span> 5000 руб.</div>
@@ -594,8 +749,8 @@ function renderBuy(id){
       </div>
 
       <div class="form">
-        <div class="field"><input id="venue" readonly value="${escapeHtml(e.venue)}"></div>
-        <div class="field"><input id="dt" readonly value="${escapeHtml(ruDate(e.date) + ', ' + e.time)}"></div>
+        <div class="field"><input id="venue" readonly value="${escapeHtml(s.theatreAddress)}"></div>
+        <div class="field"><input id="dt" readonly value="${escapeHtml(ruDate(s.date) + ', ' + s.time)}"></div>
         <div class="field"><input id="fio" placeholder="ФИО"></div>
         <div class="field"><input id="phone" placeholder="Ваш телефон"></div>
         <div class="field"><input id="email" placeholder="E-mail"></div>
@@ -605,9 +760,7 @@ function renderBuy(id){
 
   function recalc(){
     let sum = 0;
-    selected.forEach(key=>{
-      sum += avail[key] || 0;
-    });
+    selected.forEach(k=> sum += (avail[k] || 0));
     document.getElementById("total").textContent = `Всего: ${sum.toLocaleString("ru-RU")} руб.`;
     return sum;
   }
@@ -628,25 +781,24 @@ function renderBuy(id){
       const seatsEl = document.createElement("div");
       seatsEl.className = "seats";
 
-      for(let s=1; s<=rw.seats; s++){
-        const key = `${rw.row}-${s}`;
-        const p = avail[key]; // if exists => available with that price, else unavailable grey
+      for(let seatNum=1; seatNum<=rw.seats; seatNum++){
+        const key = `${rw.row}-${seatNum}`;
+        const p = avail[key]; // only available have price
 
         const seat = document.createElement("div");
         seat.className = "seat";
-        seat.textContent = s;
+        seat.textContent = seatNum;
 
         if(p){
           seat.classList.add(priceClass(p));
           if(selected.has(key)) seat.classList.add("sel");
           seat.onclick = ()=>{
-            if(selected.has(key)) selected.delete(key);
-            else selected.add(key);
+            selected.has(key) ? selected.delete(key) : selected.add(key);
             renderRows();
             recalc();
           };
-        } else {
-          seat.classList.add("na"); // grey, not clickable
+        }else{
+          seat.classList.add("na"); // grey
         }
 
         seatsEl.appendChild(seat);
@@ -670,29 +822,183 @@ function renderBuy(id){
     const email = document.getElementById("email").value.trim();
     if(!fio || !phone || !email) return alert("Заполните ФИО, телефон и E-mail.");
 
-    // после покупки делаем выбранные места недоступными (серые)
-    const store = getSoldStore();
-    const a = store[e.id] || {};
-    selected.forEach(k=>{
-      delete a[k]; // удаляем из доступных => станет серым
-    });
-    store[e.id] = a;
-    setSoldStore(store);
-
-    alert("Спасибо за покупку!");
-    location.hash = "#afisha";
+    const seatsCSV = [...selected].join(",");
+    // на платежную (виртуальный счет)
+    location.hash = `#pay:${encodeURIComponent(s.id)}|${encodeURIComponent(sum)}|${encodeURIComponent(seatsCSV)}|${encodeURIComponent(fio)}|${encodeURIComponent(phone)}|${encodeURIComponent(email)}`;
   };
 }
 
-/* =========================
-   Support button
-========================= */
-document.getElementById("supportBtn").onclick = ()=>{
-  alert("Support: сюда можно вставить ссылку на Telegram/WhatsApp.\nНапример: https://t.me/your_support");
-};
+function renderPay(paramRaw){
+  const parts = String(paramRaw||"").split("|").map(x=>decodeURIComponent(x||""));
+  const showId = parts[0];
+  const sum = Number(parts[1]||0);
+  const seatsCSV = parts[2]||"";
+  const fio = parts[3]||"";
+  const phone = parts[4]||"";
+  const email = parts[5]||"";
+
+  const s = findShow(showId);
+  if(!s || !sum || !seatsCSV){
+    location.hash = "#theatres";
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="topbar" style="border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px">
+      <div class="pill" onclick="location.hash='#buy:${escapeHtml(s.id)}'">← Назад</div>
+      <div class="pill" onclick="openSupport()">Support</div>
+    </div>
+
+    <div class="payBrand">VIRTUAL <span>Pay</span></div>
+
+    <div class="payCard">
+      <div class="payH1">Быстрая оплата</div>
+      <div class="paySum">Сумма: ${sum.toLocaleString("ru-RU")} ₽</div>
+      <div class="payMuted">
+        Плательщик: <b>${escapeHtml(fio)}</b><br>
+        Телефон: <b>${escapeHtml(phone)}</b><br>
+        E-mail: <b>${escapeHtml(email)}</b><br><br>
+        После успешной оплаты места станут недоступными.
+      </div>
+
+      <button class="payBtn primary" data-bank="Другие банки">Другие банки ( кешбек до 10% )</button>
+      <button class="payBtn" data-bank="Т-Банк">Оплатить с Т-Банк</button>
+      <button class="payBtn" data-bank="Альфа Банк">АльфаБанк</button>
+      <button class="payBtn" data-bank="СБЕР">СБЕР</button>
+
+      <button class="payBtn" id="cancel" style="margin-top:14px;background:#f3f4f6">Свернуть</button>
+    </div>
+  `;
+
+  function finishPayment(bank){
+    // списываем выбранные места: удаляем из "доступных" => становятся серыми
+    const store = getAvailStore();
+    const avail = store[s.id] || {};
+    seatsCSV.split(",").filter(Boolean).forEach(k=>{
+      delete avail[k];
+    });
+    store[s.id] = avail;
+    setAvailStore(store);
+
+    // сохраняем билет (просто лог)
+    const tickets = JSON.parse(localStorage.getItem(K.TICKETS)||"[]");
+    const code = "T" + Math.random().toString(36).slice(2,8).toUpperCase();
+    tickets.push({
+      ts: Date.now(),
+      code, bank,
+      theatre: s.theatreName,
+      address: s.theatreAddress,
+      title: s.title,
+      date: s.date,
+      time: s.time,
+      fio, phone, email,
+      seats: seatsCSV,
+      sum
+    });
+    localStorage.setItem(K.TICKETS, JSON.stringify(tickets));
+
+    alert(`Оплата успешна (${bank}).\nСпасибо за покупку!\nБилет: ${code}`);
+    location.hash = `#theatre:${s.theatreId}`;
+  }
+
+  document.querySelectorAll("button[data-bank]").forEach(b=>{
+    b.onclick = ()=> finishPayment(b.dataset.bank);
+  });
+  document.getElementById("cancel").onclick = ()=> location.hash = `#buy:${s.id}`;
+}
 
 /* =========================
-   Start
+   ADMIN (hidden)
+   - Not linked anywhere
+   - You can open by typing: #admin
+========================= */
+function renderAdmin(){
+  const tickets = JSON.parse(localStorage.getItem(K.TICKETS)||"[]").slice().reverse();
+  app.innerHTML = `
+    <div class="panel">
+      <div class="topbar">
+        <div class="pill" onclick="location.hash='#theatres'">← Назад</div>
+        <div class="pill" onclick="if(confirm('Очистить все данные?')){localStorage.clear();location.hash='#theatres';location.reload();}">Очистить всё</div>
+      </div>
+      <div class="screenTitle">Админ</div>
+      <div class="note">Скрытый режим. Не виден клиентам. Билеты (последние сверху).</div>
+      <div class="list">
+        ${tickets.length ? tickets.map(t=>`
+          <div class="item" style="grid-template-columns:1fr">
+            <div class="tTitle" style="font-size:28px">Билет ${escapeHtml(t.code)} — ${Number(t.sum).toLocaleString("ru-RU")} ₽</div>
+            <div class="tMeta" style="font-size:16px">
+              <b>${escapeHtml(t.theatre)}</b> — ${escapeHtml(t.address)}<br>
+              ${escapeHtml(t.title)} — ${ruDate(t.date)} ${escapeHtml(t.time)}<br>
+              ${escapeHtml(t.fio)} • ${escapeHtml(t.phone)} • ${escapeHtml(t.email)}<br>
+              Места: ${escapeHtml(t.seats)} • Банк: ${escapeHtml(t.bank)}
+              <small>${new Date(t.ts).toLocaleString("ru-RU")}</small>
+            </div>
+          </div>
+        `).join("") : `<div style="padding:18px;color:#6b7280;font-weight:900">Пока нет покупок.</div>`}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================
+   Support chat
+========================= */
+const chat = document.getElementById("chat");
+const body = document.getElementById("chatBody");
+
+function addMsg(text, who="bot"){
+  const div=document.createElement("div");
+  div.className="msg "+(who==="me"?"me":"bot");
+  div.textContent=text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function openSupport(){
+  chat.style.display = (chat.style.display==="none" || !chat.style.display) ? "block" : "none";
+  if(!body.children.length){
+    addMsg("Здравствуйте! Я support. Чем помочь?");
+  }
+}
+
+function botReply(q){
+  const t=q.toLowerCase();
+  if(t.includes("как купить")) return "Выберите театр → спектакль → места на схеме → заполните данные → оплатите на виртуальной платёжной странице.";
+  if(t.includes("оплат")) return "Если оплата не проходит — попробуйте другой банк. Если нужно — напишите в Telegram.";
+  if(t.includes("возврат")) return "Для возврата напишите в Telegram: ФИО, телефон, дата/время, код билета.";
+  if(t.includes("telegram")) return "Открываю Telegram support…";
+  return "Понял. Опишите проблему подробнее, пожалуйста.";
+}
+
+document.getElementById("supportBtn").onclick = openSupport;
+document.getElementById("chatClose").onclick = ()=> chat.style.display="none";
+
+document.getElementById("chatSend").onclick = ()=>{
+  const inp=document.getElementById("chatInput");
+  const q=inp.value.trim();
+  if(!q) return;
+  addMsg(q,"me");
+  inp.value="";
+  const a = botReply(q);
+  addMsg(a,"bot");
+  if(q.toLowerCase().includes("telegram")){
+    window.open(TELEGRAM_SUPPORT_LINK, "_blank");
+  }
+};
+
+document.getElementById("chatInput").addEventListener("keydown",(e)=>{
+  if(e.key==="Enter") document.getElementById("chatSend").click();
+});
+document.querySelectorAll(".quick button").forEach(b=>{
+  b.onclick=()=>{
+    const q=b.dataset.q;
+    document.getElementById("chatInput").value=q;
+    document.getElementById("chatSend").click();
+  };
+});
+
+/* =========================
+   INIT
 ========================= */
 route();
 </script>
