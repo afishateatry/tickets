@@ -19,9 +19,12 @@
     .bal{font-size:46px;font-weight:900;margin:6px 0 18px}
     .field{display:flex;gap:10px;flex-wrap:wrap}
     input{flex:1;min-width:220px;padding:16px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px;font-weight:800;outline:none}
-    button{padding:16px 14px;border:none;border-radius:12px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;font-weight:900;font-size:16px;cursor:pointer;min-width:160px}
+    button,a.btn{
+      padding:16px 14px;border:none;border-radius:12px;
+      background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;font-weight:900;font-size:16px;
+      cursor:pointer;min-width:200px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center
+    }
     .hint{margin-top:12px;color:var(--muted);font-weight:700}
-    .mini{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:#111827;font-weight:800}
   </style>
 </head>
 <body>
@@ -37,7 +40,26 @@
 
     <div class="field">
       <input id="amount" type="number" placeholder="Сумма пополнения, ₽" min="1" step="1">
-      <button id="topup">Пополнить</button>
+      <a class="btn" id="payLink" href="#">Пополнить по ссылке</a>
     </div>
 
-    <div class="hint">Это виртуальный счёт (демо). В реальном проекте сюда подключим плат
+    <div class="hint">Пополнение идёт через страницу “быстрой оплаты” (демо). После оплаты баланс увеличится.</div>
+  </div>
+</div>
+
+<script>
+const K = { BAL:"THEATRE_BALANCE_V1" };
+function getBal(){ return Number(localStorage.getItem(K.BAL) || "0"); }
+function setBal(v){ localStorage.setItem(K.BAL, String(v)); }
+function render(){ document.getElementById("bal").textContent = getBal().toLocaleString("ru-RU") + " ₽"; }
+render();
+
+document.getElementById("payLink").onclick = (e)=>{
+  e.preventDefault();
+  const v = Math.max(0, Number(document.getElementById("amount").value||0));
+  if(v<=0){ alert("Введите сумму пополнения."); return; }
+  location.href = `pay.html?amount=${encodeURIComponent(v)}&return=wallet.html`;
+};
+</script>
+</body>
+</html>
