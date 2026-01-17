@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Админ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f3f4f6;--card:#fff;--text:#0b0b0c;--muted:#6b7280;--line:#e5e7eb;--shadow:0 18px 40px rgba(0,0,0,.12);}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:980px;margin:0 auto;padding:12px 12px 40px;}
+    .top{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:10px 0 12px;}
+    a.pill{display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--text);text-decoration:none;font-weight:800;font-size:14px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px;}
+    h1{margin:0 0 12px;font-size:34px;font-weight:900}
+    h2{margin:0 0 10px;font-size:22px;font-weight:900}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:820px){.grid{grid-template-columns:1fr}}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    select,input,textarea{
+      width:100%;
+      padding:12px 12px;border:1px solid var(--line);border-radius:12px;
+      font-weight:800;outline:none
+    }
+    textarea{min-height:120px;font-weight:700;line-height:1.4}
+    button{
+      padding:12px 14px;border:none;border-radius:12px;
+      background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;font-weight:900;cursor:pointer;
+    }
+    .muted{color:var(--muted);font-weight:700;font-size:13px;margin-top:8px}
+    .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .chip{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .chip b{font-weight:900}
+    .chip button{background:#111827}
+    .danger{background:#b91c1c}
+    .miniBtn{padding:10px 12px;border-radius:12px}
+    .k{font-weight:900}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="pill" href="index.html">← Афиша</a>
+    <a class="pill" href="wallet.html">💳 Кошелёк</a>
+  </div>
+
+  <div class="card">
+    <h1>Админ</h1>
+    <div class="muted">
+      ✅ Здесь можно скрывать конкретные даты (чтобы они не отображались на сайте).  
+      ✅ При смене месяца скрытия автоматически сбрасываются (и есть кнопка сброса вручную).
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Скрыть день</h2>
+      <div class="row">
+        <select id="showSel"></select>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="date" type="date">
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="hide">Скрыть дату</button>
+        <button id="unhide" class="miniBtn" style="background:#111827">Показать дату</button>
+      </div>
+      <div class="muted">Формат ключа скрытия: <span class="k">спектакль|YYYY-MM-DD</span></div>
+
+      <div style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px">
+        <div class="row">
+          <button id="reset" class="danger">Сбросить скрытые даты (текущий месяц)</button>
+        </div>
+        <div class="muted">Если хочешь “обновить месяц с первого числа” — жмёшь сброс, и даты снова появятся.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Скрытые даты</h2>
+      <div id="hiddenList" class="list"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Редактор спектаклей (быстро)</h2>
+    <div class="muted">Можно править тексты/актёров/описание. После сохранения обнови афишу.</div>
+    <div class="row" style="margin-top:10px">
+      <select id="editSel"></select>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="editTitle" placeholder="Название">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="editPoster" placeholder="Ссылка на постер (картинка)">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <textarea id="editDesc" placeholder="Описание"></textarea>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <textarea id="editCast" placeholder="Актёры (каждая строка: Актёр - Роль)"></textarea>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="saveShow">Сохранить спектакль</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const K = {
+  DATA:"THEATRE_DATA_V1",
+  HIDDEN_DAYS:"THEATRE_HIDDEN_DAYS_V1",
+  MONTH:"THEATRE_MONTH_MARK_V1",
+};
+
+function yyyy_mm(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
+function resetIfNewMonth(){
+  const mark = localStorage.getItem(K.MONTH);
+  const cur = yyyy_mm();
+  if(mark !== cur){
+    localStorage.setItem(K.MONTH, cur);
+    localStorage.removeItem(K.HIDDEN_DAYS);
+  }
+}
+function loadData(){ return JSON.parse(localStorage.getItem(K.DATA)); }
+function saveData(v){ localStorage.setItem(K.DATA, JSON.stringify(v)); }
+function getHidden(){ return JSON.parse(localStorage.getItem(K.HIDDEN_DAYS)||"[]"); }
+function setHidden(arr){ localStorage.setItem(K.HIDDEN_DAYS, JSON.stringify(arr)); }
+
+resetIfNewMonth();
+
+const data = loadData();
+const showSel = document.getElementById("showSel");
+const editSel = document.getElementById("editSel");
+
+function fillSelects(){
+  showSel.innerHTML="";
+  editSel.innerHTML="";
+  data.shows.forEach(s=>{
+    const o1=document.createElement("option");
+    o1.value=s.id; o1.textContent=s.title;
+    showSel.appendChild(o1);
+
+    const o2=document.createElement("option");
+    o2.value=s.id; o2.textContent=s.title;
+    editSel.appendChild(o2);
+  });
+}
+fillSelects();
+
+function renderHidden(){
+  const list=document.getElementById("hiddenList");
+  const arr=getHidden();
+  if(!arr.length){
+    list.innerHTML = `<div style="color:#6b7280;font-weight:700">Пока ничего не скрыто.</div>`;
+    return;
+  }
+  list.innerHTML="";
+  arr.slice().reverse().forEach(key=>{
+    const [id, iso] = key.split("|");
+    const show = data.shows.find(x=>x.id===id);
+    const div=document.createElement("div");
+    div.className="chip";
+    div.innerHTML = `
+      <div><b>${show?show.title:id}</b><div style="color:#6b7280;font-weight:700">${iso}</div></div>
+      <button data-k="${key}">Удалить</button>
+    `;
+    div.querySelector("button").onclick=()=>{
+      const a=getHidden().filter(x=>x!==key);
+      setHidden(a);
+      renderHidden();
+    };
+    list.appendChild(div);
+  });
+}
+renderHidden();
+
+document.getElementById("hide").onclick=()=>{
+  const id=showSel.value;
+  const iso=document.getElementById("date").value;
+  if(!iso){ alert("Выберите дату"); return; }
+  const key=`${id}|${iso}`;
+  const arr=getHidden();
+  if(!arr.includes(key)) arr.push(key);
+  setHidden(arr);
+  renderHidden();
+  alert("Скрыто.");
+};
+
+document.getElementById("unhide").onclick=()=>{
+  const id=showSel.value;
+  const iso=document.getElementById("date").value;
+  if(!iso){ alert("Выберите дату"); return; }
+  const key=`${id}|${iso}`;
+  const arr=getHidden().filter(x=>x!==key);
+  setHidden(arr);
+  renderHidden();
+  alert("Показано.");
+};
+
+document.getElementById("reset").onclick=()=>{
+  if(confirm("Сбросить скрытые даты этого месяца?")){
+    localStorage.removeItem(K.HIDDEN_DAYS);
+    renderHidden();
+    alert("Сброшено.");
+  }
+};
+
+/** Editor */
+function loadEditor(){
+  const id=editSel.value;
+  const s=data.shows.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById("editTitle").value = s.title || "";
+  document.getElementById("editPoster").value = s.poster || "";
+  document.getElementById("editDesc").value = s.description || "";
+  document.getElementById("editCast").value = (s.cast||[]).map(x=>`${x.actor} - ${x.role}`).join("\n");
+}
+editSel.onchange = loadEditor;
+loadEditor();
+
+document.getElementById("saveShow").onclick=()=>{
+  const id=editSel.value;
+  const s=data.shows.find(x=>x.id===id);
+  if(!s) return;
+
+  s.title = document.getElementById("editTitle").value.trim() || s.title;
+  s.poster = document.getElementById("editPoster").value.trim() || s.poster;
+  s.description = document.getElementById("editDesc").value.trim() || s.description;
+
+  const castLines = document.getElementById("editCast").value.split("\n").map(x=>x.trim()).filter(Boolean);
+  s.cast = castLines.map(line=>{
+    const parts=line.split(" - ");
+    return {actor:(parts[0]||"").trim(), role:(parts.slice(1).join(" - ")||"").trim()};
+  });
+
+  saveData(data);
+  alert("Сохранено. Обновите афишу (index.html).");
+};
+</script>
+</body>
+</html>
