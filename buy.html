@@ -90,4 +90,254 @@
       <div class="lg"><span class="sq" style="background:var(--price1)"></span> 2500 руб.</div>
       <div class="lg"><span class="sq" style="background:var(--price2)"></span> 3500 руб.</div>
       <div class="lg"><span class="sq" style="background:var(--price3)"></span> 5000 руб.</div>
-      <div class
+      <div class="lg"><span class="sq" style="background:var(--price4)"></span> 5500 руб.</div>
+    </div>
+
+    <div class="hallTitle">Схема зала</div>
+
+    <div class="hall">
+      <div class="rows" id="rows"></div>
+    </div>
+
+    <div class="stage">Сцена</div>
+
+    <div class="footer">
+      <div class="total" id="total">Всего: 0 руб.</div>
+      <button class="buyBtn" id="buy">Купить</button>
+    </div>
+
+    <div class="form">
+      <div class="field"><input id="venue" readonly></div>
+      <div class="field"><input id="datetime" readonly></div>
+      <div class="field"><input id="fio" placeholder="ФИО"></div>
+      <div class="field"><input id="phone" placeholder="Ваш телефон"></div>
+      <div class="field"><input id="email" placeholder="E-mail"></div>
+      <div class="hint">Оплата проходит через виртуальный счёт (кошелёк). Если не хватает — пополните по ссылке оплаты.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const K = {
+  EVENTS:"THEATRE_EVENTS_V2",
+  BAL:"THEATRE_BALANCE_V1",
+  BOOKINGS:"THEATRE_BOOKINGS_V2"
+};
+
+function rub(n){ return (n||0).toLocaleString("ru-RU"); }
+function qs(k){ return new URLSearchParams(location.search).get(k); }
+function loadEvents(){ return JSON.parse(localStorage.getItem(K.EVENTS)||'{"events":[]}'); }
+function getBal(){ return Number(localStorage.getItem(K.BAL) || "0"); }
+function setBal(v){ localStorage.setItem(K.BAL, String(v)); }
+function getBookings(){ return JSON.parse(localStorage.getItem(K.BOOKINGS) || "{}"); }
+function setBookings(obj){ localStorage.setItem(K.BOOKINGS, JSON.stringify(obj)); }
+function formatRU(isoDate){
+  const [y,m,d]=isoDate.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+const id = qs("id");
+const {events} = loadEvents();
+const e = events.find(x=>x.id===id);
+if(!e){
+  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Некорректная ссылка</div>";
+  throw new Error("bad link");
+}
+
+document.title = "Выбор мест — " + e.title;
+document.getElementById("title").textContent = e.title;
+document.getElementById("meta").textContent = `${e.city}, ${formatRU(e.date)}, ${e.time}`;
+document.getElementById("venue").value = e.venue;
+document.getElementById("datetime").value = `${formatRU(e.date)}, ${e.time}`;
+document.getElementById("back").href = `show.html?id=${encodeURIComponent(e.id)}`;
+document.getElementById("bal").textContent = " " + (getBal().toLocaleString("ru-RU") + " ₽");
+
+/** 7 рядов (как ты просил) */
+const layout = [
+  {row:7, seats:16},
+  {row:6, seats:16},
+  {row:5, seats:15},
+  {row:4, seats:15},
+  {row:3, seats:13},
+  {row:2, seats:13},
+  {row:1, seats:13},
+];
+
+/** зоны/цены — “цветные места среди серых” */
+function priceFor(row, seat){
+  // ближе к сцене (ряд 1) — больше ярких/дорогих
+  if(row===1){
+    if([3,4,12,13].includes(seat)) return 5500;
+    if([7,8,9].includes(seat)) return 5000;
+    return 2500;
+  }
+  if(row===2){
+    if([3,7,9,12,13].includes(seat)) return 3500;
+    if([6,8].includes(seat)) return 5000;
+    return 2500;
+  }
+  if(row===3){
+    if([2,8,9].includes(seat)) return 3500;
+    return 2500;
+  }
+  if(row===4){
+    if([5,10,11,14].includes(seat)) return 3500;
+    return 2500;
+  }
+  if(row===5){
+    if([5,8,13].includes(seat)) return 3500;
+    return 2500;
+  }
+  if(row===6){
+    if([4,12].includes(seat)) return 2500;
+    return 0; // серые
+  }
+  if(row===7){
+    if([2,8].includes(seat)) return 2500;
+    return 0; // серые
+  }
+  return 0;
+}
+function priceClass(p){
+  if(p===2500) return "p2500";
+  if(p===3500) return "p3500";
+  if(p===5000) return "p5000";
+  if(p===5500) return "p5500";
+  return "";
+}
+
+/** Занятость: рандом + часто парами рядом, но оставляем много свободных пар */
+const perfKey = `event|${e.id}`;
+const bookings = getBookings();
+bookings[perfKey] = bookings[perfKey] || { sold: {}, seeded:false };
+
+function seededRand(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+  return ()=>{ h+=h<<13; h^=h>>>7; h+=h<<3; h^=h>>>17; h+=h<<5; return ((h>>>0)%100000)/100000; };
+}
+
+if(!bookings[perfKey].seeded){
+  bookings[perfKey].seeded = true;
+  const r = seededRand(perfKey);
+
+  layout.forEach(row=>{
+    const count=row.seats;
+    // занятость ~10-14% и в основном парами
+    const pairs = Math.max(1, Math.floor(count * (0.10 + r()*0.04) / 2));
+    for(let i=0;i<pairs;i++){
+      const s = 1 + Math.floor(r()*(count-1)); // место + место рядом
+      // не зажимать зал полностью: не ставим слишком много подряд
+      if(bookings[perfKey].sold[`${row.row}-${s}`]) continue;
+      if(bookings[perfKey].sold[`${row.row}-${s+1}`]) continue;
+
+      bookings[perfKey].sold[`${row.row}-${s}`]=true;
+      bookings[perfKey].sold[`${row.row}-${s+1}`]=true;
+    }
+  });
+
+  setBookings(bookings);
+}
+
+const selected = new Set();
+
+function recompute(){
+  let sum=0;
+  selected.forEach(key=>{
+    const [row,seat]=key.split("-").map(Number);
+    const p = priceFor(row,seat) || 2500;
+    sum+=p;
+  });
+  document.getElementById("total").textContent = `Всего: ${rub(sum)} руб.`;
+  return sum;
+}
+
+function renderSeats(){
+  const rowsEl=document.getElementById("rows");
+  rowsEl.innerHTML="";
+  const soldMap = bookings[perfKey].sold || {};
+
+  layout.forEach(r=>{
+    const rowEl=document.createElement("div");
+    rowEl.className="row";
+
+    const rowNum=document.createElement("div");
+    rowNum.className="rowNum";
+    rowNum.textContent=r.row;
+    rowEl.appendChild(rowNum);
+
+    const seats=document.createElement("div");
+    seats.className="seats";
+
+    for(let s=1;s<=r.seats;s++){
+      const key=`${r.row}-${s}`;
+      const btn=document.createElement("div");
+      btn.className="seat";
+      btn.textContent=s;
+
+      const p=priceFor(r.row,s);
+      if(p>0) btn.classList.add(priceClass(p));
+
+      const sold=!!soldMap[key];
+      if(sold) btn.classList.add("sold");
+      if(selected.has(key)) btn.classList.add("sel");
+
+      btn.onclick=()=>{
+        if(sold) return;
+        if(selected.has(key)) selected.delete(key);
+        else selected.add(key);
+        renderSeats();
+        recompute();
+      };
+
+      seats.appendChild(btn);
+    }
+
+    rowEl.appendChild(seats);
+    rowsEl.appendChild(rowEl);
+  });
+
+  recompute();
+}
+
+renderSeats();
+
+document.getElementById("buy").onclick=()=>{
+  const sum=recompute();
+  if(sum<=0){ alert("Выберите места."); return; }
+
+  const fio=document.getElementById("fio").value.trim();
+  const phone=document.getElementById("phone").value.trim();
+  const email=document.getElementById("email").value.trim();
+  if(!fio || !phone || !email){
+    alert("Заполните ФИО, телефон и E-mail.");
+    return;
+  }
+
+  const bal=getBal();
+  if(bal < sum){
+    const need = sum - bal;
+    const go = confirm(`Не хватает ${need.toLocaleString("ru-RU")} ₽. Открыть ссылку оплаты для пополнения?`);
+    if(go) location.href = `pay.html?amount=${encodeURIComponent(need)}&return=wallet.html`;
+    return;
+  }
+
+  setBal(bal - sum);
+
+  const b = getBookings();
+  b[perfKey] = b[perfKey] || {sold:{}, seeded:true};
+  selected.forEach(k=> b[perfKey].sold[k]=true);
+
+  b[perfKey].tickets = b[perfKey].tickets || [];
+  const code = "T" + Math.random().toString(36).slice(2,8).toUpperCase();
+  b[perfKey].tickets.push({code,fio,phone,email,seats:[...selected],sum,ts:Date.now()});
+  setBookings(b);
+
+  alert("Спасибо за покупку!");
+  selected.clear();
+  document.getElementById("bal").textContent = " " + (getBal().toLocaleString("ru-RU") + " ₽");
+  renderSeats();
+};
+</script>
+</body>
+</html>
