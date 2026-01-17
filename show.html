@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Спектакль</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f3f4f6;--card:#fff;--text:#0b0b0c;--muted:#6b7280;--line:#e5e7eb;--shadow:0 18px 40px rgba(0,0,0,.12);}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:900px;margin:0 auto;padding:12px 12px 40px;}
+    .top{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:10px 0 12px;}
+    a.pill{display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--text);text-decoration:none;font-weight:800;font-size:14px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;}
+    .head{display:grid;grid-template-columns:140px 1fr;gap:16px;padding:16px;border-bottom:1px solid var(--line);}
+    .poster{width:140px;height:140px;border-radius:14px;overflow:hidden;background:#111;box-shadow:0 10px 18px rgba(0,0,0,.15)}
+    .poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .h1{font-size:40px;font-weight:900;line-height:1.05;margin:4px 0 8px}
+    .sub{font-size:16px;font-weight:800}
+    .sub span{display:block;font-weight:700;color:var(--muted);margin-top:4px}
+    .buy{display:inline-flex;align-items:center;justify-content:center;width:min(520px,100%);height:66px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:20px;cursor:pointer;text-decoration:none;box-shadow:0 16px 30px rgba(0,0,0,.18)}
+    .content{padding:18px;}
+    h2{margin:0 0 14px;font-size:34px;font-weight:900}
+    .kv{font-size:18px;line-height:1.55;margin-bottom:18px}
+    .kv b{font-weight:900}
+    .kv div{margin:6px 0}
+    .desc{font-size:18px;line-height:1.7;color:#374151;white-space:pre-wrap}
+    .dates{margin:14px 0 8px;display:flex;gap:10px;flex-wrap:wrap}
+    .dateBtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 12px;cursor:pointer;font-weight:900}
+    .dateBtn.active{background:#0b0b0c;color:#fff;border-color:#0b0b0c}
+    .hint{color:var(--muted);font-size:13px;margin-top:8px}
+    @media(max-width:560px){
+      .head{grid-template-columns:120px 1fr}
+      .poster{width:120px;height:120px}
+      .h1{font-size:34px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="pill" href="index.html">← Афиша</a>
+    <a class="pill" href="wallet.html">💳 Кошелёк</a>
+  </div>
+
+  <div class="card">
+    <div class="head">
+      <div class="poster"><img id="poster" alt=""></div>
+      <div>
+        <div class="h1" id="title">...</div>
+        <div class="sub" id="meta">...<span id="venue">...</span></div>
+
+        <div class="dates" id="dates"></div>
+        <a class="buy" id="goBuy" href="#">Купить</a>
+        <div class="hint">Выберите дату, затем переходите к схеме зала.</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>О событии:</h2>
+      <div class="kv" id="about"></div>
+
+      <h2>Актёрский состав:</h2>
+      <div class="kv" id="cast"></div>
+
+      <h2>Описание:</h2>
+      <div class="desc" id="desc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const K = { DATA:"THEATRE_DATA_V1", HIDDEN_DAYS:"THEATRE_HIDDEN_DAYS_V1", MONTH:"THEATRE_MONTH_MARK_V1" };
+
+function yyyy_mm(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
+function resetIfNewMonth(){
+  const mark = localStorage.getItem(K.MONTH);
+  const cur = yyyy_mm();
+  if(mark !== cur){
+    localStorage.setItem(K.MONTH, cur);
+    localStorage.removeItem(K.HIDDEN_DAYS);
+  }
+}
+function loadData(){ return JSON.parse(localStorage.getItem(K.DATA)); }
+function getHidden(){ return new Set(JSON.parse(localStorage.getItem(K.HIDDEN_DAYS)||"[]")); }
+
+function todayRangeToEndOfMonth(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  return {start,end};
+}
+function formatDateRU(d){
+  const dd=String(d.getDate()).padStart(2,"0");
+  const mm=String(d.getMonth()+1).padStart(2,"0");
+  const yyyy=d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+function isoDate(d){ return d.toISOString().slice(0,10); }
+
+function qs(k){ return new URLSearchParams(location.search).get(k); }
+
+resetIfNewMonth();
+
+const id = qs("id");
+const data = loadData();
+const show = data.shows.find(x=>x.id===id);
+if(!show){
+  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Не найдено</div>";
+  throw new Error("not found");
+}
+
+document.title = show.title + " — Театр";
+document.getElementById("poster").src = show.poster;
+document.getElementById("title").textContent = show.title;
+document.getElementById("meta").textContent = `${show.city}`;
+document.getElementById("venue").textContent = show.venue;
+
+const aboutEl = document.getElementById("about");
+aboutEl.innerHTML = "";
+Object.entries(show.about).forEach(([k,v])=>{
+  const label = ({
+    director:"Режиссер-постановщик",
+    artist:"Художник-постановщик",
+    producer:"Продюсеры",
+    costume:"Художник по костюмам",
+    music:"Музыкальное оформление",
+    light:"Художник по освещению",
+    ballet:"Балетмейстер",
+    sound:"Звукорежиссер",
+    video:"Видео",
+    assistant:"Помощник режиссера",
+  })[k] || k;
+
+  const row = document.createElement("div");
+  row.innerHTML = `<b>${label}</b> — ${v}`;
+  aboutEl.appendChild(row);
+});
+
+const castEl = document.getElementById("cast");
+castEl.innerHTML = show.cast.map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("");
+
+document.getElementById("desc").textContent = show.description;
+
+const hidden = getHidden();
+const {start,end} = todayRangeToEndOfMonth();
+const datesEl = document.getElementById("dates");
+
+let selectedISO = null;
+for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+  const key = `${show.id}|${isoDate(d)}`;
+  if(hidden.has(key)) continue;
+
+  const btn = document.createElement("button");
+  btn.className = "dateBtn";
+  btn.type = "button";
+  btn.textContent = formatDateRU(d);
+  btn.onclick = ()=>{
+    selectedISO = isoDate(d);
+    [...datesEl.querySelectorAll(".dateBtn")].forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("goBuy").href = `buy.html?id=${encodeURIComponent(show.id)}&date=${encodeURIComponent(selectedISO)}&time=21:00`;
+  };
+  datesEl.appendChild(btn);
+
+  if(!selectedISO){
+    // автоселект первой доступной
+    btn.click();
+  }
+}
+
+if(!datesEl.children.length){
+  datesEl.innerHTML = `<div style="color:#6b7280;font-weight:700">Нет доступных дат (всё скрыто).</div>`;
+  document.getElementById("goBuy").style.display="none";
+}
+</script>
+</body>
+</html>
