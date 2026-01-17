@@ -9,11 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#f3f4f6; --card:#ffffff; --text:#0b0b0c; --muted:#6b7280; --line:#e5e7eb;
+      --bg:#f3f4f6; --card:#fff; --text:#0b0b0c; --muted:#6b7280; --line:#e5e7eb;
       --shadow:0 18px 40px rgba(0,0,0,.12);
 
-      --seat:#8b93a6; --sold:#d1d5db;
-      --p2500:#1f7a2e; --p3500:#b455d6; --p5000:#ff2b2b; --p5500:#17ff17;
+      --sold:#8b93a6;     /* Недоступный (как серо-синий на скрине) */
+      --free:#d1d5db;     /* вспомогательный, почти не используется */
+
+      --p2500:#0f6b1d;    /* зелёный */
+      --p3500:#b455d6;    /* фиолетовый */
+      --p5000:#ff0000;    /* красный */
+      --p5500:#00ff00;    /* ярко-зелёный */
     }
     *{box-sizing:border-box}
     body{
@@ -31,6 +36,7 @@
     .topbar{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px;background:#fff;border-bottom:1px solid var(--line)}
     .pill{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--text);text-decoration:none;font-weight:900;font-size:16px;cursor:pointer}
     .screenTitle{margin:0;padding:22px 18px;text-align:center;font-size:48px;font-weight:900;border-bottom:1px solid var(--line);background:#fff}
+    .note{padding:10px 14px;color:var(--muted);font-weight:800;border-bottom:1px solid var(--line);background:#fff}
     .list{display:flex;flex-direction:column}
     .item{display:grid;grid-template-columns:140px 1fr;gap:18px;padding:18px;background:#fff;border-top:1px solid var(--line);align-items:center}
     .item:first-child{border-top:none}
@@ -55,19 +61,42 @@
     .kv b{font-weight:900}
     .desc{white-space:pre-wrap;color:#374151;font-size:20px;line-height:1.75}
 
+    /* Зал */
     .legend{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:#fff;font-weight:900}
     .lg{display:flex;gap:10px;align-items:center}
     .sq{width:18px;height:18px;border-radius:2px;background:#999}
-    .hallTitle{margin:0;padding:18px 18px;text-align:center;color:#fff;background:linear-gradient(180deg,#1a1a1b,#000);font-weight:900;font-size:28px}
+    .hallTitle{
+      margin:0;
+      padding:18px 18px;
+      text-align:center;
+      color:#fff;
+      background:linear-gradient(180deg,#1a1a1b,#000);
+      font-weight:900;
+      font-size:28px;
+    }
     .hall{padding:18px 18px 8px;background:#fff}
     .rows{display:flex;flex-direction:column;gap:12px;align-items:center}
     .row{display:flex;gap:10px;align-items:center}
     .rowNum{width:22px;text-align:right;font-weight:900;color:#111}
     .seats{display:flex;gap:8px;flex-wrap:nowrap}
-    .seat{width:30px;height:30px;border-radius:2px;background:var(--seat);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900;cursor:pointer;user-select:none}
-    .seat.sold{background:var(--sold);color:#6b7280;cursor:not-allowed}
+    .seat{
+      width:30px;height:30px;border-radius:2px;
+      background:var(--sold);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+      cursor:pointer;
+      box-shadow:0 2px 0 rgba(0,0,0,.12);
+    }
+    .seat.na{cursor:not-allowed;filter:saturate(.8)}
     .seat.sel{outline:3px solid #111827;outline-offset:1px}
-    .seat.p2500{background:var(--p2500)} .seat.p3500{background:var(--p3500)} .seat.p5000{background:var(--p5000)} .seat.p5500{background:var(--p5500)}
+    .seat.p2500{background:var(--p2500)}
+    .seat.p3500{background:var(--p3500)}
+    .seat.p5000{background:var(--p5000)}
+    .seat.p5500{background:var(--p5500)}
 
     .stage{margin:14px 18px 12px;border-radius:14px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;text-align:center;font-weight:900;font-size:40px;padding:18px 12px}
     .footer{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 240px;gap:12px;align-items:center;background:#fff}
@@ -114,35 +143,33 @@
   </button>
 
 <script>
-/* ========================
-   LIVE DATA (NO BOT LOOK)
-   - different crew
-   - different cast
-   - different description
-   - theatre photos
-   - only from today to end of month
-   - new month auto refresh
-======================== */
+/* =========================
+   STORAGE + LIVE MONTH
+========================= */
 const K = {
-  SOLD: "AFISHA_SOLD_V2",
-  MONTH: "AFISHA_MONTH_V2"
+  EVENTS: "AFISHA_EVENTS_MONTH_V4",
+  MONTH:  "AFISHA_MONTH_V4",
+  SOLD:   "AFISHA_SOLD_V4"
 };
 
 const app = document.getElementById("app");
 
-function yyyy_mm(d=new Date()){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+/* ---- local date (NO UTC SHIFT) ---- */
+function isoLocal(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
 }
-function rangeTodayToEndOfMonth(){
-  const now=new Date();
-  const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const end=new Date(now.getFullYear(),now.getMonth()+1,0);
-  return {start,end};
-}
-function iso(d){ return d.toISOString().slice(0,10); }
 function ruDate(isoDate){
   const [y,m,d]=isoDate.split("-");
   return `${d}.${m}.${y}`;
+}
+function yyyy_mm(d=new Date()){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+function daysInMonth(y, mIndex){
+  return new Date(y, mIndex+1, 0).getDate();
 }
 function seededRand(str){
   let h=2166136261>>>0;
@@ -163,52 +190,35 @@ function escapeHtml(s){
   return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 }
 
-/* ---- theatre photos only ---- */
-const THEATRE_PHOTOS = [
-  "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1520697830682-bbb6e85e2b0d?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1521336575822-6da63fb45455?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1485562569060-2eec283d3391?auto=format&fit=crop&w=1100&q=70",
-  "https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=1100&q=70"
-];
+/* =========================
+   REALISTIC DATA POOLS
+========================= */
+const TIME_POOL = ["18:00","19:00","20:00","21:00","22:00"];
 
-/* ---- realistic pools ---- */
-const TITLES = [
-  "Дядя Ваня","Король Лир","Женитьба Фигаро","Герой нашего времени","Тонкая линия",
-  "Седьмой ряд","Театр теней","Город без сна","Ночной экспресс","Осколки памяти",
-  "Письма в тишину","Портрет ветра","Странный вечер","Три шага до весны","Внутри музыки",
-  "Свет со сцены","Чужая роль","Зал ожидания","Последний акт","Точка тишины"
-];
+const DIRECTORS = ["Евгений Писарев","Илья Соколов","Марина Кузнецова","Александр Фомин","Никита Ланской","Виктория Волкова","Дмитрий Север","Елена Климова","Сергей Шевченко","Тимур Полянский"];
+const ARTISTS  = ["Андреас фон Шлиппе","Мария Волошина","Ольга Миронова","Софья Мартынова","Антон Громов","Екатерина Жданова","Марина Синицына","Ирина Селезнёва"];
+const PRODUCERS= ["Владимир Прудкин","Алексей Смирнов","Николай Ветров","Алина Коваль","Павел Ильин","Александр Братинов"];
+const MUSIC    = ["Тимур Полянский","Алексей Смирнов","Николай Ветров","Дмитрий Север","Марина Синицына","Екатерина Жданова","Анжелика Борисова"];
+const LIGHT    = ["Сергей Невгадовский","Марина Синицына","Игорь Сафонов","Елена Климова","Ксения Артемьева","Глеб Рязанов"];
+const SOUND    = ["Сергей Шевченко","Алина Коваль","Николай Ветров","Дмитрий Север","Павел Ильин"];
+const VIDEO    = ["Александр Братинов","Антон Громов","Павел Ильин","Елена Климова"];
+const ASSIST   = ["Любовь Скирко","Дарья Зайцева","Софья Мартынова","Екатерина Жданова","Вера Степанова"];
 
-const DIRECTORS = ["Евгений Писарев","Илья Соколов","Марина Кузнецова","Александр Фомин","Никита Ланской","Виктория Волкова","Дмитрий Север","Елена Климова"];
-const ARTISTS  = ["Андреас фон Шлиппе","Мария Волошина","Елена Климова","Софья Мартынова","Ирина Селезнёва","Кирилл Лебедев","Ольга Миронова"];
-const PRODUCERS= ["Владимир Прудкин","Алексей Смирнов","Тимур Полянский","Сергей Шевченко","Анжелика Борисова","Алина Коваль"];
-const MUSIC    = ["Тимур Полянский","Алексей Смирнов","Николай Ветров","Дмитрий Север","Марина Синицына","Екатерина Жданова"];
-const LIGHT    = ["Сергей Невгадовский","Марина Синицына","Игорь Сафонов","Елена Климова","Ксения Артемьева"];
-const SOUND    = ["Сергей Шевченко","Алина Коваль","Николай Ветров","Дмитрий Север"];
-const VIDEO    = ["Александр Братинов","Антон Громов","Павел Ильин"];
-const ASSIST   = ["Любовь Скирко","Дарья Зайцева","Софья Мартынова","Екатерина Жданова"];
-
-/* актёры и роли — большой пул, чтобы редко повторялось */
 const ACTORS = [
   "Ирина Грищенко","Константин Темляк","Ирина Мельник","Юлия Брусенцева","Сергей Невгадовский",
   "Анна Романова","Кирилл Лебедев","Ольга Селезнёва","Михаил Назаров","Павел Ильин",
   "Ксения Артемьева","Игорь Сафонов","Вера Степанова","Глеб Рязанов","Даниил Платонов",
-  "Мария Волошина","Александр Фомин","Никита Ланской","Виктория Волкова","Елена Климова"
+  "Мария Волошина","Александр Фомин","Никита Ланской","Виктория Волкова","Елена Климова",
+  "Антон Громов","Николай Ветров","Алина Коваль","Марина Синицына"
 ];
 
 const ROLES = [
   "Печорин","Грушницкий","Вера","Мери","Астров","Соня","Елена Андреевна","Войницкий",
-  "Фигаро","Граф","Графиня","Сюзанна","Лир","Глостер","Шут","Эдгар","Ведущий","Гостья",
-  "Он","Она","Тень","Странник","Рассказчик","Слуги просцениума","Хранитель сцены"
+  "Фигаро","Граф","Графиня","Сюзанна","Лир","Глостер","Шут","Эдгар",
+  "Рассказчик","Странник","Хранитель сцены","Тень","Он","Она","Ведущий","Гостья",
+  "Слуги просцениума","Музыкант","Суфлёр","Режиссёр в кадре"
 ];
 
-const TIME_POOL = ["18:00","19:00","20:00","21:00","22:00"];
-
-/* описания — шаблоны + переменные (реалистичнее) */
 const DESC_TEMPLATES = [
   ({title, theme, mood}) => `«${title}» — ${mood} спектакль о ${theme}.
 Здесь нет простых ответов: герои спорят с судьбой, прячутся за шутками и всё равно
@@ -223,91 +233,165 @@ const DESC_TEMPLATES = [
 Спектакль двигается как музыка: сначала лёгкий мотив, потом — напряжение,
 и в финале — точка, после которой хочется молчать ещё минуту.`
 ];
-
 const THEMES = [
   "выборе и цене выбора","памяти и вине","любви и упрямстве","страхе быть собой","правде, которую не говорят вслух",
-  "одиночестве в толпе","власти привычек","попытке начать заново","хрупкости доверия","силе прощения"
+  "одиночестве в толпе","власти привычек","попытке начать заново","хрупкости доверия","силе прощения",
+  "надежде в конце сезона","случайной встрече","долгом молчании","прощании со сценой","возвращении домой"
 ];
-const MOODS = ["нежная, но острая","парадоксально смешная","тихая и пронзительная","жёсткая и честная","светлая и нервная"];
+const MOODS = ["нежная, но острая","парадоксально смешная","тихая и пронзительная","жёсткая и честная","светлая и нервная","строгая и тонкая"];
 
-function buildEventForDate(dateISO){
-  const r = seededRand("event|" + dateISO);
-  const title = pick(r, TITLES);
-  const time  = pick(r, TIME_POOL);
-  const poster = pick(r, THEATRE_PHOTOS);
+/* =========================
+   UNIQUE TITLES FOR WHOLE MONTH (NO REPEATS)
+========================= */
+function generateUniqueTitles(count, r){
+  const A = [
+    "Тихая","Громкая","Последняя","Первая","Скрытая","Слепая","Живая","Чёрная","Белая","Красная","Синяя",
+    "Тонкая","Ночная","Дневная","Ранняя","Поздняя","Странная","Лёгкая","Тяжёлая","Светлая","Холодная","Тёплая",
+    "Невидимая","Случайная","Короткая","Длинная","Новая","Старая","Честная","Ложная"
+  ];
+  const N = [
+    "линия","сцена","роль","пауза","комната","правда","ошибка","маска","тишина","память","вера","письмо","встреча",
+    "легенда","тень","мелодия","афиша","история","реплика","записка","шаг","выбор","сон","театр","занавес",
+    "рампа","галёрка","оркестр","кулисы","монолог"
+  ];
+  const S = [
+    "вчера","сегодня","завтра","перед занавесом","после аплодисментов","на седьмом ряду","в оркестровой яме",
+    "за кулисами","в свете рампы","без слов","в один акт","в два голоса","в три сцены","на пустой сцене"
+  ];
 
-  // у каждого спектакля своя команда (разные поля и значения)
-  const about = {
-    director: pick(r, DIRECTORS),
-    artist:   pick(r, ARTISTS),
-    producer: pick(r, PRODUCERS),
-    music:    pick(r, MUSIC),
-    light:    pick(r, LIGHT),
-    sound:    pick(r, SOUND),
-    video:    pick(r, VIDEO),
-    assistant:pick(r, ASSIST),
-  };
-
-  // актёры: 4–6 человек, роли тоже разные
-  const castCount = 4 + Math.floor(r()*3); // 4..6
-  const actors = uniqPick(r, ACTORS, castCount);
-  const roles  = uniqPick(r, ROLES, castCount);
-  const cast = actors.map((a,i)=>({actor:a, role: roles[i] || pick(r, ROLES)}));
-
-  // описание: шаблон + переменные
-  const theme = pick(r, THEMES);
-  const mood  = pick(r, MOODS);
-  const descFn = pick(r, DESC_TEMPLATES);
-  const description = descFn({title, theme, mood});
-
-  return {
-    id: "e_" + dateISO,
-    title,
-    city:"Москва",
-    venue:"Москва, ул. Большая Садовая 6",
-    date: dateISO,
-    time,
-    poster,
-    about,
-    cast,
-    description
-  };
+  const used=new Set();
+  const out=[];
+  let tries=0;
+  while(out.length<count && tries<8000){
+    tries++;
+    const base = `${pick(r,A)} ${pick(r,N)}`;
+    const full = base + (r()<0.60 ? ` — ${pick(r,S)}` : "");
+    const key = full.toLowerCase();
+    if(used.has(key)) continue;
+    used.add(key);
+    out.push(full);
+  }
+  while(out.length<count) out.push(`Спектакль №${out.length+1}`);
+  return out;
 }
 
-function liveEvents(){
-  // авто-обновление при новом месяце + можно чистить старые sold, чтобы не росло
-  const curMonth = yyyy_mm();
-  const stored = localStorage.getItem(K.MONTH);
-  if(stored !== curMonth){
-    localStorage.setItem(K.MONTH, curMonth);
-    // очистим занятости старого месяца
+/* =========================
+   THEATRE PHOTOS (MORE THEATRE-LIKE)
+   (Unsplash source with theatre keywords; sig fixes repetition)
+========================= */
+function theatrePoster(sig){
+  const keywords = [
+    "theatre,stage", "opera,stage", "theater,auditorium", "theatre,curtain", "theatre,seats",
+    "theater,lights", "opera,house", "theatre,performance", "stage,spotlight", "theatre,interior"
+  ];
+  const q = keywords[sig % keywords.length];
+  return `https://source.unsplash.com/900x900/?${encodeURIComponent(q)}&sig=${sig}`;
+}
+
+/* =========================
+   MONTH EVENTS (1..end of month), then filter (today..end)
+========================= */
+function ensureMonthEvents(){
+  const key = yyyy_mm(new Date());
+  const storedKey = localStorage.getItem(K.MONTH);
+
+  // new month -> rebuild + clear sold
+  if(storedKey !== key){
+    localStorage.setItem(K.MONTH, key);
+    localStorage.removeItem(K.EVENTS);
     localStorage.removeItem(K.SOLD);
   }
 
-  const {start,end} = rangeTodayToEndOfMonth();
+  if(localStorage.getItem(K.EVENTS)) return;
+
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const total = daysInMonth(y, m);
+
+  const r = seededRand("MONTH|" + key);
+  const titles = generateUniqueTitles(total, r);
+
   const events = [];
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    // один спектакль в день (как ты сказал: можно один)
-    events.push(buildEventForDate(iso(d)));
+  for(let day=1; day<=total; day++){
+    const d = new Date(y, m, day);
+    const dateISO = isoLocal(d);
+
+    const title = titles[day-1];
+    const time  = pick(r, TIME_POOL);
+    const poster = theatrePoster(day);
+
+    const about = {
+      director: pick(r, DIRECTORS),
+      artist:   pick(r, ARTISTS),
+      producer: pick(r, PRODUCERS),
+      music:    pick(r, MUSIC),
+      light:    pick(r, LIGHT),
+      sound:    pick(r, SOUND),
+      video:    pick(r, VIDEO),
+      assistant:pick(r, ASSIST),
+    };
+
+    const castCount = 4 + Math.floor(r()*4); // 4..7
+    const actors = uniqPick(r, ACTORS, castCount);
+    const roles  = uniqPick(r, ROLES, castCount);
+    const cast = actors.map((a,i)=>({actor:a, role: roles[i] || pick(r, ROLES)}));
+
+    const theme = pick(r, THEMES);
+    const mood  = pick(r, MOODS);
+    const descFn = pick(r, DESC_TEMPLATES);
+    const description = descFn({title, theme, mood});
+
+    events.push({
+      id: "e_" + dateISO,
+      title,
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      date: dateISO,
+      time,
+      poster,
+      about,
+      cast,
+      description
+    });
   }
-  return events;
+
+  localStorage.setItem(K.EVENTS, JSON.stringify({events}));
 }
 
-/* ========================
+function liveEvents(){
+  ensureMonthEvents();
+  const {events} = JSON.parse(localStorage.getItem(K.EVENTS) || '{"events":[]}');
+  const todayISO = isoLocal(new Date()); // local today
+  return events.filter(e => e.date >= todayISO);
+}
+
+function findEvent(id){
+  const {events} = JSON.parse(localStorage.getItem(K.EVENTS) || '{"events":[]}');
+  return events.find(x=>x.id===id);
+}
+
+/* =========================
    ROUTER (SPA)
-======================== */
+========================= */
 function route(){
   const hash = location.hash || "#afisha";
   const [page, param] = hash.split(":");
   if(page === "#event") return renderEvent(param);
   if(page === "#buy") return renderBuy(param);
+  if(page === "#reset"){
+    localStorage.removeItem(K.EVENTS);
+    localStorage.removeItem(K.SOLD);
+    location.hash = "#afisha";
+    return;
+  }
   return renderAfisha();
 }
 window.addEventListener("hashchange", route);
 
-/* ========================
-   Screens
-======================== */
+/* =========================
+   SCREENS
+========================= */
 function renderAfisha(){
   const events = liveEvents();
 
@@ -315,8 +399,9 @@ function renderAfisha(){
     <div class="panel">
       <div class="topbar">
         <div class="pill" onclick="location.hash='#afisha'">← Афиша</div>
-        <div class="pill" onclick="alert('Support: вставь сюда ссылку на Telegram/WhatsApp')">Support</div>
+        <div class="pill" onclick="location.hash='#reset'">Сброс</div>
       </div>
+      <div class="note">Показываем только с сегодняшнего дня до конца месяца. Завтра “вчера” исчезнет автоматически.</div>
       <div class="screenTitle">Театр</div>
       <div class="list" id="list"></div>
     </div>
@@ -339,11 +424,6 @@ function renderAfisha(){
   });
 }
 
-function findEvent(id){
-  const events = liveEvents();
-  return events.find(x=>x.id===id);
-}
-
 function renderEvent(id){
   const e = findEvent(id);
   if(!e){ location.hash="#afisha"; return; }
@@ -362,7 +442,7 @@ function renderEvent(id){
   app.innerHTML = `
     <div class="topbar" style="border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px">
       <div class="pill" onclick="location.hash='#afisha'">← Афиша</div>
-      <div class="pill" onclick="location.hash='#afisha'">Театр</div>
+      <div class="pill" onclick="location.hash='#buy:${e.id}'">Купить</div>
     </div>
 
     <div class="card">
@@ -372,21 +452,21 @@ function renderEvent(id){
           <div class="tTitle">${e.title}</div>
           <div class="tMeta">${e.city},<br>${ruDate(e.date)}, ${e.time}</div>
           <button class="btn" id="goBuy">Купить</button>
-          <div class="hint">Переход на схему зала<br>→ выбор мест → оплата</div>
+          <div class="hint">Переход на схему зала<br>→ выбор мест → покупка</div>
         </div>
       </div>
 
       <div class="section">
         <div class="secTitle">О событии:</div>
         <div class="kv">
-          ${Object.entries(e.about).map(([k,v])=>`<div><b>${labels[k]||k}</b> — ${v}</div>`).join("")}
+          ${Object.entries(e.about).map(([k,v])=>`<div><b>${labels[k]||k}</b> — ${escapeHtml(v)}</div>`).join("")}
         </div>
       </div>
 
       <div class="section">
         <div class="secTitle">Актёрский<br>состав:</div>
         <div class="kv">
-          ${e.cast.map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("")}
+          ${e.cast.map(x=>`<div><b>${escapeHtml(x.actor)}</b> - ${escapeHtml(x.role)}</div>`).join("")}
         </div>
       </div>
 
@@ -396,79 +476,93 @@ function renderEvent(id){
       </div>
     </div>
   `;
-
   document.getElementById("goBuy").onclick = ()=> location.hash = `#buy:${e.id}`;
+}
+
+/* =========================
+   SEAT MAP EXACT SHAPE + COLORS + 85-90% OCCUPIED
+   - Grey = Недоступный
+   - Colored = доступный по цене
+   - Guarantee: in EACH row there is one adjacent pair available
+========================= */
+const HALL_LAYOUT = [
+  {row:9, seats:13},
+  {row:8, seats:13},
+  {row:7, seats:16},
+  {row:6, seats:16},
+  {row:5, seats:15},
+  {row:4, seats:15},
+  {row:3, seats:13},
+  {row:2, seats:13},
+  {row:1, seats:13},
+];
+
+// ценовой “рядовой” профиль (чтобы как на скрине были все цвета)
+function rowPriceTier(row){
+  if(row<=1) return 5500;
+  if(row===2) return 5000;
+  if(row===3) return 3500;
+  if(row===4) return 3500;
+  if(row===5) return 3500;
+  return 2500;
+}
+function priceClass(p){
+  if(p===2500) return "p2500";
+  if(p===3500) return "p3500";
+  if(p===5000) return "p5000";
+  if(p===5500) return "p5500";
+  return "";
+}
+
+function getSoldStore(){
+  return JSON.parse(localStorage.getItem(K.SOLD) || "{}");
+}
+function setSoldStore(v){
+  localStorage.setItem(K.SOLD, JSON.stringify(v));
+}
+
+// Generate availability map:
+// - total occupied 85-90% => available 10-15%
+// - we guarantee 1 pair per row (2 available seats per row) => 18 available / 127 = 14.17% (OK)
+// - all other seats are grey "Недоступный"
+// - pair position varies per event (seeded), so not одинаково
+function ensureAvailabilityForEvent(eventId){
+  const store = getSoldStore();
+  if(store[eventId]) return store[eventId];
+
+  const r = seededRand("AVAIL|" + eventId);
+  const avail = {}; // key: "row-seat" => price (available). All others are grey/unavailable.
+
+  HALL_LAYOUT.forEach(rowObj=>{
+    const row = rowObj.row;
+    const seats = rowObj.seats;
+
+    // choose pair start 1..seats-1
+    // also avoid extreme edges often (more realistic): 70% choose inside
+    let start;
+    if(seats > 3 && r() < 0.70){
+      start = 2 + Math.floor(r()*(seats-2)); // 2..seats-1
+      if(start >= seats) start = seats-1;
+    } else {
+      start = 1 + Math.floor(r()*(seats-1));
+    }
+
+    const p = rowPriceTier(row);
+
+    avail[`${row}-${start}`] = p;
+    avail[`${row}-${start+1}`] = p;
+  });
+
+  store[eventId] = avail;
+  setSoldStore(store);
+  return avail;
 }
 
 function renderBuy(id){
   const e = findEvent(id);
   if(!e){ location.hash="#afisha"; return; }
 
-  // 7 рядов как ты хотел
-  const layout = [
-    {row:7, seats:16},{row:6, seats:16},{row:5, seats:15},
-    {row:4, seats:15},{row:3, seats:13},{row:2, seats:13},{row:1, seats:13},
-  ];
-
-  function priceFor(row, seat){
-    if(row===1){
-      if([3,4,12,13].includes(seat)) return 5500;
-      if([7,8,9].includes(seat)) return 5000;
-      return 2500;
-    }
-    if(row===2){
-      if([3,7,9,12,13].includes(seat)) return 3500;
-      if([6,8].includes(seat)) return 5000;
-      return 2500;
-    }
-    if(row===3){
-      if([2,8,9].includes(seat)) return 3500;
-      return 2500;
-    }
-    if(row===4){
-      if([5,10,11,14].includes(seat)) return 3500;
-      return 2500;
-    }
-    if(row===5){
-      if([5,8,13].includes(seat)) return 3500;
-      return 2500;
-    }
-    if(row===6){
-      if([4,12].includes(seat)) return 2500;
-      return 0;
-    }
-    if(row===7){
-      if([2,8].includes(seat)) return 2500;
-      return 0;
-    }
-    return 0;
-  }
-  function priceClass(p){
-    if(p===2500) return "p2500";
-    if(p===3500) return "p3500";
-    if(p===5000) return "p5000";
-    if(p===5500) return "p5500";
-    return "";
-  }
-
-  // занятость как на скринах: пары рядом + не слишком много
-  const perfKey = `sold_${e.id}`;
-  const soldAll = JSON.parse(localStorage.getItem(K.SOLD)||"{}");
-  if(!soldAll[perfKey]){
-    const r = seededRand(perfKey);
-    const sold = {};
-    layout.forEach(row=>{
-      const pairs = Math.max(1, Math.floor(row.seats*(0.12 + r()*0.04)/2)); // ~12-16% занято
-      for(let i=0;i<pairs;i++){
-        const s = 1 + Math.floor(r()*(row.seats-1));
-        sold[`${row.row}-${s}`]=true;
-        sold[`${row.row}-${s+1}`]=true;
-      }
-    });
-    soldAll[perfKey]=sold;
-    localStorage.setItem(K.SOLD, JSON.stringify(soldAll));
-  }
-  const sold = soldAll[perfKey];
+  const avail = ensureAvailabilityForEvent(e.id);
   const selected = new Set();
 
   app.innerHTML = `
@@ -478,14 +572,8 @@ function renderBuy(id){
     </div>
 
     <div class="card">
-      <div class="topbar" style="border-bottom:1px solid var(--line);border-radius:0;box-shadow:none">
-        <div class="pill" style="cursor:default">Выбор мест</div>
-        <div class="pill" style="cursor:default">${e.city}, ${ruDate(e.date)}, ${e.time}</div>
-      </div>
-
       <div class="legend">
-        <div class="lg"><span class="sq" style="background:var(--seat)"></span> свободно</div>
-        <div class="lg"><span class="sq" style="background:var(--sold)"></span> занято</div>
+        <div class="lg"><span class="sq" style="background:var(--sold)"></span> Недоступный</div>
         <div class="lg"><span class="sq" style="background:var(--p2500)"></span> 2500 руб.</div>
         <div class="lg"><span class="sq" style="background:var(--p3500)"></span> 3500 руб.</div>
         <div class="lg"><span class="sq" style="background:var(--p5000)"></span> 5000 руб.</div>
@@ -493,7 +581,11 @@ function renderBuy(id){
       </div>
 
       <div class="hallTitle">Схема зала</div>
-      <div class="hall"><div class="rows" id="rows"></div></div>
+
+      <div class="hall">
+        <div class="rows" id="rows"></div>
+      </div>
+
       <div class="stage">Сцена</div>
 
       <div class="footer">
@@ -502,6 +594,8 @@ function renderBuy(id){
       </div>
 
       <div class="form">
+        <div class="field"><input id="venue" readonly value="${escapeHtml(e.venue)}"></div>
+        <div class="field"><input id="dt" readonly value="${escapeHtml(ruDate(e.date) + ', ' + e.time)}"></div>
         <div class="field"><input id="fio" placeholder="ФИО"></div>
         <div class="field"><input id="phone" placeholder="Ваш телефон"></div>
         <div class="field"><input id="email" placeholder="E-mail"></div>
@@ -510,81 +604,96 @@ function renderBuy(id){
   `;
 
   function recalc(){
-    let sum=0;
-    selected.forEach(k=>{
-      const [r,s]=k.split("-").map(Number);
-      sum += (priceFor(r,s) || 2500);
+    let sum = 0;
+    selected.forEach(key=>{
+      sum += avail[key] || 0;
     });
     document.getElementById("total").textContent = `Всего: ${sum.toLocaleString("ru-RU")} руб.`;
     return sum;
   }
 
   function renderRows(){
-    const rowsEl=document.getElementById("rows");
-    rowsEl.innerHTML="";
-    layout.forEach(r=>{
-      const rowEl=document.createElement("div");
-      rowEl.className="row";
-      const rn=document.createElement("div");
-      rn.className="rowNum";
-      rn.textContent=r.row;
+    const rowsEl = document.getElementById("rows");
+    rowsEl.innerHTML = "";
+
+    HALL_LAYOUT.forEach(rw=>{
+      const rowEl = document.createElement("div");
+      rowEl.className = "row";
+
+      const rn = document.createElement("div");
+      rn.className = "rowNum";
+      rn.textContent = rw.row;
       rowEl.appendChild(rn);
 
-      const seats=document.createElement("div");
-      seats.className="seats";
+      const seatsEl = document.createElement("div");
+      seatsEl.className = "seats";
 
-      for(let s=1;s<=r.seats;s++){
-        const key=`${r.row}-${s}`;
-        const seat=document.createElement("div");
-        seat.className="seat";
-        seat.textContent=s;
+      for(let s=1; s<=rw.seats; s++){
+        const key = `${rw.row}-${s}`;
+        const p = avail[key]; // if exists => available with that price, else unavailable grey
 
-        const p=priceFor(r.row,s);
-        if(p>0) seat.classList.add(priceClass(p));
+        const seat = document.createElement("div");
+        seat.className = "seat";
+        seat.textContent = s;
 
-        if(sold[key]) seat.classList.add("sold");
-        if(selected.has(key)) seat.classList.add("sel");
+        if(p){
+          seat.classList.add(priceClass(p));
+          if(selected.has(key)) seat.classList.add("sel");
+          seat.onclick = ()=>{
+            if(selected.has(key)) selected.delete(key);
+            else selected.add(key);
+            renderRows();
+            recalc();
+          };
+        } else {
+          seat.classList.add("na"); // grey, not clickable
+        }
 
-        seat.onclick=()=>{
-          if(sold[key]) return;
-          selected.has(key) ? selected.delete(key) : selected.add(key);
-          renderRows(); recalc();
-        };
-        seats.appendChild(seat);
+        seatsEl.appendChild(seat);
       }
 
-      rowEl.appendChild(seats);
+      rowEl.appendChild(seatsEl);
       rowsEl.appendChild(rowEl);
     });
+
     recalc();
   }
+
   renderRows();
 
-  document.getElementById("buyBtn").onclick=()=>{
-    const sum=recalc();
-    if(sum<=0) return alert("Выберите места.");
+  document.getElementById("buyBtn").onclick = ()=>{
+    const sum = recalc();
+    if(sum <= 0) return alert("Выберите места (свободные — цветные).");
 
-    const fio=document.getElementById("fio").value.trim();
-    const phone=document.getElementById("phone").value.trim();
-    const email=document.getElementById("email").value.trim();
+    const fio = document.getElementById("fio").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const email = document.getElementById("email").value.trim();
     if(!fio || !phone || !email) return alert("Заполните ФИО, телефон и E-mail.");
 
-    // фиксируем покупку
-    selected.forEach(k=> sold[k]=true);
-    soldAll[perfKey]=sold;
-    localStorage.setItem(K.SOLD, JSON.stringify(soldAll));
+    // после покупки делаем выбранные места недоступными (серые)
+    const store = getSoldStore();
+    const a = store[e.id] || {};
+    selected.forEach(k=>{
+      delete a[k]; // удаляем из доступных => станет серым
+    });
+    store[e.id] = a;
+    setSoldStore(store);
 
     alert("Спасибо за покупку!");
-    location.hash="#afisha";
+    location.hash = "#afisha";
   };
 }
 
-/* Support button */
+/* =========================
+   Support button
+========================= */
 document.getElementById("supportBtn").onclick = ()=>{
-  alert("Support: сюда вставь ссылку на Telegram/WhatsApp.\nНапример: https://t.me/your_support");
+  alert("Support: сюда можно вставить ссылку на Telegram/WhatsApp.\nНапример: https://t.me/your_support");
 };
 
-/* Start */
+/* =========================
+   Start
+========================= */
 route();
 </script>
 </body>
