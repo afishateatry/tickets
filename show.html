@@ -28,28 +28,22 @@
     .kv b{font-weight:900}
     .kv div{margin:6px 0}
     .desc{font-size:18px;line-height:1.7;color:#374151;white-space:pre-wrap}
-    @media(max-width:560px){
-      .head{grid-template-columns:120px 1fr}
-      .poster{width:120px;height:120px}
-      .h1{font-size:34px}
-      h2{font-size:36px}
-    }
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <a class="pill" href="index.html">← Афиша</a>
-    <a class="pill" href="wallet.html">💳 Кошелёк</a>
+    <a class="pill" href="index.html?v=2">← Афиша</a>
+    <a class="pill" href="wallet.html?v=2">💳 Кошелёк</a>
   </div>
 
   <div class="card">
     <div class="head">
       <div class="poster"><img id="poster" alt=""></div>
       <div>
-        <div class="h1" id="title">...</div>
-        <div class="sub" id="meta">...<span id="venue">...</span></div>
-        <a class="buy" id="goBuy" href="buy.html">Купить</a>
+        <div class="h1" id="title"></div>
+        <div class="sub" id="meta"><span id="venue"></span></div>
+        <a class="buy" id="goBuy" href="#">Купить</a>
         <div style="color:#6b7280;font-weight:800;font-size:14px;margin-top:10px">
           Переход на схему зала → выбор мест → оплата с кошелька
         </div>
@@ -70,282 +64,51 @@
 </div>
 
 <script>
-/** ========= STORAGE ========= */
-const K = {
-  EVENTS:"THEATRE_EVENTS_V2",
-  HIDDEN:"THEATRE_HIDDEN_EVENTS_V2",
-};
-
-/** ========= HELPERS ========= */
+const K = { EVENTS:"THEATRE_EVENTS_V2", HIDDEN:"THEATRE_HIDDEN_EVENTS_V2" };
 function qs(k){ return new URLSearchParams(location.search).get(k); }
-function formatRU(isoDate){
-  const [y,m,d]=String(isoDate||"").split("-");
-  if(!y) return "";
-  return `${d}.${m}.${y}`;
-}
-function seededRand(str){
-  let h=2166136261>>>0;
-  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
-  return ()=>{ h+=h<<13; h^=h>>>7; h+=h<<3; h^=h>>>17; h+=h<<5; return ((h>>>0)%100000)/100000; };
-}
-function rangeToEndOfMonth(){
-  const now=new Date();
-  const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const end=new Date(now.getFullYear(),now.getMonth()+1,0);
-  return {start,end};
-}
-function iso(d){ return d.toISOString().slice(0,10); }
-function loadEvents(){
-  return JSON.parse(localStorage.getItem(K.EVENTS)||'{"events":[]}');
-}
-function saveEvents(v){
-  localStorage.setItem(K.EVENTS, JSON.stringify(v));
-}
-function hiddenSet(){
-  return new Set(JSON.parse(localStorage.getItem(K.HIDDEN)||"[]"));
-}
-
-/** ========= SEED (если вдруг открыли show.html напрямую) ========= */
-function seedEventsIfMissing(){
-  const cur = loadEvents();
-  if(cur.events && cur.events.length) return;
-
-  const titles = [
-    "Дядя Ваня","Герой нашего времени","Лондон шоу","Мечты оживают","Женитьба Фигаро",
-    "Тёмная комната","Город без сна","Письма в тишину","Ночной экспресс","Короткая правда",
-    "Седьмой ряд","Свет со сцены","Тонкая линия","Портрет ветра","Странный вечер",
-    "Три шага до весны","Внутри музыки","Театр теней","Осколки памяти","Невидимый диалог",
-  ];
-
-  const posters = [
-    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1520697830682-bbb6e85e2b0d?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1521336575822-6da63fb45455?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1515168833906-d2a3b82b302a?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=800&q=70",
-    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=70"
-  ];
-
-  const descriptions = [
-`Ты тот, во что ты веришь. Но насколько зряча душа и насколько слепы глаза?
-Куда может завести вера и что нужно, чтобы слепой прозрел. Мучительный и сложный путь
-от вопроса к ответу проходят герои, каждый из которых слышит правду по-своему.
-Этот спектакль — про власть привычек, про слабость силы и про то, как тишина иногда громче слов.`,
-`Комедия, которая работает как часовой механизм: сцены сменяются быстро, реплики точны,
-а смех внезапно становится серьёзным. Но главный секрет успеха — в характере героя:
-талантливый, живой, неудобный, он снова и снова пытается удержать равновесие там,
-где оно никому не выгодно. И именно поэтому мы узнаём в нём себя.`,
-`История о том, как человек учится быть честным — не с другими, а с собой.
-Здесь нет “правильных” ответов, зато есть точные вопросы: что мы выбираем,
-когда никто не смотрит? Что остаётся от любви, если вынуть из неё страх?
-Спектакль звучит как внутренний дневник — и иногда попадает точно в сердце.`,
-`Это спектакль о памяти: она умеет сохранять свет и умеет ранить.
-В обычном разговоре вдруг появляется пауза, и в этой паузе разворачивается целая жизнь.
-Музыка, взгляд, шаг — всё становится важным. А сцена превращается в комнату,
-где каждый узнает свою историю, даже если никогда о ней не говорил.`,
-`Нежная, но острая история о выборе и цене выбора.
-Герои бегут от себя, спорят с судьбой, смеются над страхом, но всё равно
-каждый раз возвращаются к одному: что важнее — победить или не потерять главное?
-И когда занавес опускается, ты выходишь другим — чуть тише, но яснее.`
-  ];
-
-  const aboutTemplate = () => ({
-    director:"Евгений Писарев",
-    artist:"Андреас фон Шлиппе",
-    producer:"Владимир Прудкин",
-    music:"Тимур Полянский",
-    light:"Сергей Невгадовский",
-    ballet:"Анжелика Борисова",
-    sound:"Сергей Шевченко",
-    video:"Александр Братинов",
-    assistant:"Любовь Скирко",
-  });
-
-  const castPool = [
-    ["Ирина Грищенко","Карен Стоун"],
-    ["Константин Темляк","Паоло"],
-    ["Ирина Мельник","Графиня"],
-    ["Юлия Брусенцева","Слуги просцениума"],
-    ["Сергей Невгадовский","Астров"],
-    ["Анна Романова","Вера"],
-    ["Кирилл Лебедев","Грушницкий"],
-    ["Ольга Селезнёва","Мери"],
-    ["Михаил Назаров","Печорин"],
-    ["Павел Ильин","Ведущий"],
-    ["Ксения Артемьева","Гостья"],
-    ["Игорь Сафонов","Комик"]
-  ];
-
-  const times = ["18:00","19:00","20:00","21:00","22:00"];
-
-  const {start,end} = rangeToEndOfMonth();
-  const events = [];
-  let idx=0;
-
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    for(let k=0;k<2;k++){
-      const dateISO = iso(d);
-      const id = `e_${dateISO}_${k}`;
-      const r = seededRand(id);
-
-      const title = titles[(idx + Math.floor(r()*titles.length)) % titles.length] + (k===1 ? " — Вечер" : "");
-      const poster = posters[Math.floor(r()*posters.length)];
-      const desc = descriptions[Math.floor(r()*descriptions.length)];
-      const t = times[Math.floor(r()*times.length)];
-
-      const cast = [];
-      const used = new Set();
-      while(cast.length<4){
-        const pick = castPool[Math.floor(r()*castPool.length)];
-        const key = pick[0]+"|"+pick[1];
-        if(used.has(key)) continue;
-        used.add(key);
-        cast.push({actor:pick[0], role:pick[1]});
-      }
-
-      events.push({
-        id, title,
-        city:"Москва",
-        venue:"Москва, ул. Большая Садовая 6",
-        date: dateISO,
-        time: t,
-        poster,
-        about: aboutTemplate(),
-        cast,
-        description: desc
-      });
-      idx++;
-    }
-  }
-  saveEvents({events});
-}
-
-/** ========= MIGRATION (если события старые и пустые) ========= */
-function enrichIfMissing(e){
-  const r = seededRand(e.id || (e.title||"x"));
-
-  // about
-  if(!e.about || !Object.keys(e.about).length){
-    e.about = {
-      director:"Евгений Писарев",
-      artist:"Андреас фон Шлиппе",
-      producer:"Владимир Прудкин",
-      music:"Тимур Полянский",
-      light:"Сергей Невгадовский",
-      ballet:"Анжелика Борисова",
-      sound:"Сергей Шевченко",
-      video:"Александр Братинов",
-      assistant:"Любовь Скирко",
-    };
-  }
-  // cast
-  if(!Array.isArray(e.cast) || !e.cast.length){
-    const pool = [
-      ["Ирина Грищенко","Карен Стоун"],
-      ["Константин Темляк","Паоло"],
-      ["Ирина Мельник","Графиня"],
-      ["Юлия Брусенцева","Слуги просцениума"],
-      ["Сергей Невгадовский","Астров"],
-      ["Анна Романова","Вера"],
-      ["Кирилл Лебедев","Грушницкий"],
-      ["Ольга Селезнёва","Мери"],
-      ["Михаил Назаров","Печорин"],
-      ["Павел Ильин","Ведущий"],
-      ["Ксения Артемьева","Гостья"],
-      ["Игорь Сафонов","Комик"]
-    ];
-    e.cast = [];
-    const used = new Set();
-    while(e.cast.length<4){
-      const pick = pool[Math.floor(r()*pool.length)];
-      const key = pick[0]+"|"+pick[1];
-      if(used.has(key)) continue;
-      used.add(key);
-      e.cast.push({actor:pick[0], role:pick[1]});
-    }
-  }
-  // description
-  if(!e.description || String(e.description).trim().length < 40){
-    const descs = [
-`Комедия, которая работает как часовой механизм: сцены сменяются быстро, реплики точны,
-а смех внезапно становится серьёзным. Но главный секрет успеха — в характере героя:
-талантливый, живой, неудобный, он снова и снова пытается удержать равновесие там,
-где оно никому не выгодно.`,
-`История о том, как человек учится быть честным — не с другими, а с собой.
-Здесь нет “правильных” ответов, зато есть точные вопросы: что мы выбираем,
-когда никто не смотрит? Спектакль звучит как внутренний дневник.`,
-`Это спектакль о памяти: она умеет сохранять свет и умеет ранить.
-В обычном разговоре появляется пауза, и в этой паузе разворачивается целая жизнь.`,
-`Нежная, но острая история о выборе и цене выбора.
-Герои спорят с судьбой, смеются над страхом, но всё равно возвращаются к одному: что важнее?`
-    ];
-    e.description = descs[Math.floor(r()*descs.length)];
-  }
-  // time (одно время)
-  if(!e.time){
-    const times = ["18:00","19:00","20:00","21:00","22:00"];
-    e.time = times[Math.floor(r()*times.length)];
-  }
-  // venue/city
-  e.city = e.city || "Москва";
-  e.venue = e.venue || "Москва, ул. Большая Садовая 6";
-  return e;
-}
-
-seedEventsIfMissing();
+function loadEvents(){ return JSON.parse(localStorage.getItem(K.EVENTS)||'{"events":[]}'); }
+function hiddenSet(){ return new Set(JSON.parse(localStorage.getItem(K.HIDDEN)||"[]")); }
+function formatRU(isoDate){ const [y,m,d]=String(isoDate||"").split("-"); return y?`${d}.${m}.${y}`:""; }
 
 const id = qs("id");
-let store = loadEvents();
-const hidden = hiddenSet();
-let e = store.events.find(x=>x.id===id);
+const {events} = loadEvents();
+const e = events.find(x=>x.id===id);
 
-if(!e || hidden.has(id)){
-  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Событие не найдено или скрыто. Вернитесь в Афишу.</div>";
+if(!id || !e || hiddenSet().has(id)){
+  document.body.innerHTML = "<div style='padding:18px;font-family:Inter;font-weight:900'>Событие не найдено. Открой Афишу заново.</div>";
   throw new Error("not found");
 }
 
-// подлечим если старое/пустое
-e = enrichIfMissing(e);
-// сохраним исправления обратно
-store.events = store.events.map(x=> x.id===e.id ? e : x);
-saveEvents(store);
+// ВАЖНО: buy всегда с id + анти-кэш
+document.getElementById("goBuy").href = `buy.html?id=${encodeURIComponent(e.id)}&v=2`;
 
-// render
-document.title = e.title + " — Театр";
-document.getElementById("poster").src = e.poster;
-document.getElementById("title").textContent = e.title;
-document.getElementById("meta").textContent = `${e.city}, ${formatRU(e.date)}, ${e.time}`;
-document.getElementById("venue").textContent = e.venue;
+document.getElementById("poster").src = e.poster || "";
+document.getElementById("title").textContent = e.title || "Спектакль";
+document.getElementById("meta").firstChild.textContent = `${e.city||"Москва"}, ${formatRU(e.date)}, ${e.time||"21:00"}`;
+document.getElementById("venue").textContent = e.venue || "Москва, ул. Большая Садовая 6";
 
-// buy link (всегда)
-document.getElementById("goBuy").href = `buy.html?id=${encodeURIComponent(e.id)}`;
-
-const labels = {
-  director:"Режиссер-постановщик",
-  artist:"Художник-постановщик",
-  producer:"Продюсеры",
-  costume:"Художник по костюмам",
-  music:"Музыкальное оформление",
-  light:"Художник по освещению",
-  ballet:"Балетмейстер",
-  sound:"Звукорежиссер",
-  video:"Видео",
-  assistant:"Помощник режиссера",
+// если вдруг данные пустые — подставим дефолты
+const about = e.about || {
+  director:"Евгений Писарев", artist:"Андреас фон Шлиппе", producer:"Владимир Прудкин",
+  music:"Тимур Полянский", light:"Сергей Невгадовский", ballet:"Анжелика Борисова",
+  sound:"Сергей Шевченко", video:"Александр Братинов", assistant:"Любовь Скирко"
 };
 
-const aboutEl = document.getElementById("about");
-aboutEl.innerHTML = "";
-Object.entries(e.about||{}).forEach(([k,v])=>{
-  const row=document.createElement("div");
-  row.innerHTML = `<b>${labels[k]||k}</b> — ${v}`;
-  aboutEl.appendChild(row);
-});
+const labels = {
+  director:"Режиссер-постановщик", artist:"Художник-постановщик", producer:"Продюсеры",
+  costume:"Художник по костюмам", music:"Музыкальное оформление", light:"Художник по освещению",
+  ballet:"Балетмейстер", sound:"Звукорежиссер", video:"Видео", assistant:"Помощник режиссера",
+};
+
+document.getElementById("about").innerHTML =
+  Object.entries(about).map(([k,v])=>`<div><b>${labels[k]||k}</b> — ${v}</div>`).join("");
 
 document.getElementById("cast").innerHTML =
-  (e.cast||[]).map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("");
+  (e.cast||[]).length ? (e.cast||[]).map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("")
+  : "<div style='color:#6b7280;font-weight:700'>Состав обновляется</div>";
 
-document.getElementById("desc").textContent = e.description || "";
+document.getElementById("desc").textContent =
+  (e.description && e.description.trim().length>20) ? e.description : "Описание обновляется.";
 </script>
 </body>
 </html>
