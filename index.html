@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>АФИША — Театр</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f3f4f6; --card:#fff; --text:#0b0b0c; --muted:#6b7280;
+      --line:#e5e7eb; --shadow:0 18px 40px rgba(0,0,0,.12);
+      --btn:#0b0b0c;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(#0b0b0c 0 280px, var(--bg) 280px 100%);
+      color:var(--text);
+    }
+    .hero{
+      padding:22px 16px 26px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      color:#fff;
+    }
+    .logo{
+      display:flex; align-items:center; gap:12px;
+      font-weight:900; letter-spacing:.5px; font-size:44px;
+      text-transform:uppercase;
+    }
+    .smile{
+      width:52px; height:52px; border-radius:50%;
+      background:#fbbf24; display:grid; place-items:center;
+      color:#0b0b0c; font-weight:900;
+      box-shadow:0 12px 26px rgba(0,0,0,.35);
+    }
+    .subtitle{font-weight:800; opacity:.9; letter-spacing:.2em}
+    .wrap{max-width:980px; margin:0 auto; padding:0 12px 40px}
+    .panel{
+      background:var(--card); border:1px solid var(--line); border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel h1{
+      margin:0; padding:22px 18px; text-align:center; font-size:44px; font-weight:900;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:0;
+    }
+    .item{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:18px;
+      padding:18px;
+      align-items:center;
+      border-top:1px solid var(--line);
+      background:#fff;
+    }
+    .item:first-child{border-top:none}
+    .poster{
+      width:120px; height:120px; border-radius:12px;
+      overflow:hidden; background:#111;
+      display:grid; place-items:center; color:#fff;
+      box-shadow:0 10px 18px rgba(0,0,0,.15);
+    }
+    .poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .title{
+      font-size:34px; font-weight:900; line-height:1.05; margin:0 0 8px;
+    }
+    .meta{
+      color:var(--text);
+      font-weight:800;
+      margin:0 0 14px;
+      font-size:18px;
+    }
+    .meta span{display:block; font-weight:600; color:var(--text); opacity:.9}
+    .buy{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:min(520px,100%); height:66px;
+      background:linear-gradient(180deg,#1a1a1b, #000);
+      color:#fff; border:none; border-radius:12px;
+      font-weight:900; font-size:20px; letter-spacing:.02em;
+      cursor:pointer;
+      box-shadow:0 16px 30px rgba(0,0,0,.18);
+      transition:transform .08s ease;
+      text-decoration:none;
+    }
+    .buy:active{transform:scale(.99)}
+    .topbar{
+      display:flex; gap:10px; justify-content:space-between; align-items:center;
+      padding:12px 14px; background:#fff; border-bottom:1px solid var(--line);
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:10px 12px; border:1px solid var(--line);
+      border-radius:999px; background:#fff; color:var(--text);
+      text-decoration:none; font-weight:700; font-size:14px;
+    }
+    .pill b{font-weight:900}
+    .note{padding:10px 14px; color:var(--muted); font-size:13px; border-bottom:1px solid var(--line)}
+    @media (max-width:520px){
+      .logo{font-size:40px}
+      .panel h1{font-size:42px}
+      .item{grid-template-columns:110px 1fr}
+      .poster{width:110px;height:110px}
+      .title{font-size:30px}
+    }
+
+    /* support button */
+    .supportBtn{
+      position:fixed; right:18px; bottom:18px; width:68px; height:68px;
+      border-radius:50%;
+      border:none; cursor:pointer;
+      background:radial-gradient(circle at 30% 30%, #60a5fa, #2563eb 55%, #1d4ed8 100%);
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      z-index:9999;
+    }
+    .supportBtn svg{width:34px;height:34px;fill:#fff}
+    .chat{
+      position:fixed; right:18px; bottom:96px; width:min(360px, calc(100vw - 36px));
+      background:#fff; border:1px solid var(--line); border-radius:16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.22);
+      overflow:hidden; z-index:9999; display:none;
+    }
+    .chatHeader{
+      background:#0b0b0c; color:#fff; padding:12px 12px; display:flex; align-items:center; justify-content:space-between;
+      font-weight:900;
+    }
+    .chatHeader button{background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer}
+    .chatBody{padding:12px; max-height:320px; overflow:auto; display:flex; flex-direction:column; gap:10px;}
+    .msg{padding:10px 12px; border-radius:14px; max-width:90%; font-size:14px; line-height:1.35}
+    .me{background:#111827; color:#fff; align-self:flex-end}
+    .bot{background:#f3f4f6; color:#111827; border:1px solid #e5e7eb}
+    .chatActions{display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); background:#fff}
+    .chatActions input{
+      flex:1; padding:12px 12px; border:1px solid var(--line); border-radius:12px; outline:none;
+      font-weight:600;
+    }
+    .chatActions button{
+      padding:12px 14px; border:none; border-radius:12px; background:#0b0b0c; color:#fff; font-weight:900; cursor:pointer;
+    }
+    .quick{
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .quick button{
+      border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 10px; cursor:pointer;
+      font-weight:700; font-size:12px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="logo">АФИША <div class="smile">☺</div></div>
+    <div class="subtitle">ТЕАТР</div>
+  </header>
+
+  <div class="wrap">
+    <section class="panel">
+      <div class="topbar">
+        <a class="pill" href="wallet.html">💳 <span>Кошелёк</span> <b id="bal">0 ₽</b></a>
+        <a class="pill" href="admin.html">⚙️ <span>Админ</span></a>
+      </div>
+      <div class="note">Показываются даты с сегодняшнего дня до конца месяца. В админке можно скрывать дни.</div>
+      <h1>Театр</h1>
+      <div id="list" class="grid"></div>
+    </section>
+  </div>
+
+  <!-- Support -->
+  <button class="supportBtn" id="supportBtn" aria-label="Support">
+    <svg viewBox="0 0 24 24"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.05.87 3.92 2.3 5.33L4.5 20.5l4.38-1.46c.98.29 2.03.46 3.12.46 4.97 0 9-3.58 9-8s-4.03-8-9-8zm-4 9h8a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2zm0-3h8a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/></svg>
+  </button>
+  <div class="chat" id="chat">
+    <div class="chatHeader">
+      <div>Support</div>
+      <button id="chatClose">✕</button>
+    </div>
+    <div class="chatBody" id="chatBody"></div>
+    <div class="chatBody" style="padding-top:0">
+      <div class="quick">
+        <button data-q="Как купить?">Как купить?</button>
+        <button data-q="Не проходит оплата">Не проходит оплата</button>
+        <button data-q="Нужен возврат">Нужен возврат</button>
+        <button data-q="Оставить заявку">Оставить заявку</button>
+      </div>
+    </div>
+    <div class="chatActions">
+      <input id="chatInput" placeholder="Напишите сообщение..."/>
+      <button id="chatSend">Отправить</button>
+    </div>
+  </div>
+
+<script>
+/** ==========================
+ *  STORAGE KEYS
+ * ========================== */
+const K = {
+  DATA: "THEATRE_DATA_V1",
+  BAL: "THEATRE_BALANCE_V1",
+  HIDDEN_DAYS: "THEATRE_HIDDEN_DAYS_V1",
+  BOOKINGS: "THEATRE_BOOKINGS_V1",
+  SUPPORT: "THEATRE_SUPPORT_TICKETS_V1",
+  MONTH: "THEATRE_MONTH_MARK_V1",
+};
+
+function rub(n){ return (n||0).toLocaleString("ru-RU") + " ₽"; }
+
+function todayRangeToEndOfMonth(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 0); // last day
+  return {start, end};
+}
+function yyyy_mm(){
+  const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+function resetIfNewMonth(){
+  const mark = localStorage.getItem(K.MONTH);
+  const cur = yyyy_mm();
+  if(mark !== cur){
+    localStorage.setItem(K.MONTH, cur);
+    localStorage.removeItem(K.HIDDEN_DAYS);
+    // Можно также очистить брони по желанию — но оставим, чтобы не терять историю.
+  }
+}
+
+function seedDataIfMissing(){
+  if(localStorage.getItem(K.DATA)) return;
+
+  const shows = [
+    {
+      id:"vanya",
+      title:"Дядя Ваня",
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      poster:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=70",
+      about:{
+        director:"Илья Соколов",
+        artist:"Марина Кузнецова",
+        costume:"Ольга Миронова",
+        music:"Алексей Смирнов",
+        ballet:"Виктория Волкова",
+        assistant:"Дарья Зайцева",
+      },
+      cast:[
+        {actor:"Ирина Грищенко", role:"Елена Андреевна"},
+        {actor:"Константин Темляк", role:"Доктор Астров"},
+        {actor:"Юлия Брусенцева", role:"Соня"},
+        {actor:"Сергей Невгадовский", role:"Войницкий"},
+      ],
+      description:
+`Ты тот, во что ты веришь. Но насколько зряча душа и насколько слепы глаза?
+Куда может завести вера и что нужно, чтобы слепой прозрел. Мучительный и сложный путь
+от вопроса к ответу проходят и «впавший в глупость» Лир, и «кровавоглазый» Глостер.
+Трагедия короля, чья изуродованная властью душа ослепляет разум, звучит в унисон
+с трагедией Глостера, ослеплённого, но благодаря этому прозревающего душой.`
+    },
+    {
+      id:"hero",
+      title:"Герой нашего времени",
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      poster:"https://images.unsplash.com/photo-1520697830682-bbb6e85e2b0d?auto=format&fit=crop&w=800&q=70",
+      about:{
+        director:"Евгений Писарев",
+        artist:"Андреас фон Шлиппе",
+        producer:"Владимир Прудкин",
+        music:"Тимур Полянский",
+        light:"Сергей Невгадовский",
+        sound:"Сергей Шевченко",
+        video:"Александр Братинов",
+        assistant:"Любовь Скирко",
+      },
+      cast:[
+        {actor:"Михаил Назаров", role:"Печорин"},
+        {actor:"Анна Романова", role:"Вера"},
+        {actor:"Кирилл Лебедев", role:"Грушницкий"},
+        {actor:"Ольга Селезнёва", role:"Мери"},
+      ],
+      description:
+`История человека, который слишком хорошо видит людей и слишком плохо — себя.
+Судьба сводит его с любовью, честолюбием и одиночеством; и каждый раз,
+выбирая выигрыш, он теряет главное. Спектакль — как дневник: откровенно,
+жёстко и по-своему нежно о том, что внутри сильнее нас.`
+    },
+    {
+      id:"london",
+      title:"Лондон шоу",
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      poster:"https://images.unsplash.com/photo-1521336575822-6da63fb45455?auto=format&fit=crop&w=800&q=70",
+      about:{
+        director:"Никита Ланской",
+        artist:"Мария Волошина",
+        music:"Дмитрий Север",
+        sound:"Алина Коваль",
+        assistant:"Екатерина Жданова",
+      },
+      cast:[
+        {actor:"Павел Ильин", role:"Ведущий"},
+        {actor:"Ксения Артемьева", role:"Гостья"},
+        {actor:"Игорь Сафонов", role:"Комик"},
+      ],
+      description:
+`Смешное и честное шоу о том, как мы притворяемся взрослыми.
+Музыка, живые реплики, неожиданная импровизация и истории,
+в которых узнаёшь себя — даже если очень не хочется.`
+    },
+    {
+      id:"dreams",
+      title:"Мечты оживают",
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      poster:"https://images.unsplash.com/photo-1515168833906-d2a3b82b302a?auto=format&fit=crop&w=800&q=70",
+      about:{
+        director:"Александр Фомин",
+        artist:"Елена Климова",
+        music:"Николай Ветров",
+        light:"Марина Синицына",
+        assistant:"Софья Мартынова",
+      },
+      cast:[
+        {actor:"Даниил Платонов", role:"Он"},
+        {actor:"Вера Степанова", role:"Она"},
+        {actor:"Глеб Рязанов", role:"Тень"},
+      ],
+      description:
+`Нежная история о том, как в самых обычных комнатах вдруг появляется чудо.
+Иногда оно приходит через музыку, иногда — через взгляд, а иногда — через тишину.
+Этот спектакль о памяти, любви и смелости снова захотеть.`
+    },
+    {
+      id:"figaro",
+      title:"Женитьба Фигаро",
+      city:"Москва",
+      venue:"Москва, ул. Большая Садовая 6",
+      poster:"https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=800&q=70",
+      about:{
+        director:"Евгений Писарев",
+        artist:"Андреас фон Шлиппе",
+        producer:"Владимир Прудкин",
+        music:"Тимур Полянский",
+        light:"Сергей Невгадовский",
+        ballet:"Анжелика Борисова",
+        sound:"Сергей Шевченко",
+        video:"Александр Братинов",
+        assistant:"Любовь Скирко",
+      },
+      cast:[
+        {actor:"Ирина Грищенко", role:"Карен Стоун"},
+        {actor:"Константин Темляк", role:"Паоло"},
+        {actor:"Ирина Мельник", role:"Графиня"},
+        {actor:"Юлия Брусенцева", role:"Слуги просцениума"},
+      ],
+      description:
+`Комедия «Женитьба Фигаро», придуманная придворным часовщиком Бомарше,
+на протяжении трёх столетий пользуется огромным успехом благодаря идеальной,
+словно часовой механизм, композиции, динамичности и юмору, который не утратил
+своей свежести. Но главный секрет успеха, конечно, в характере героя:
+талантливый Фигаро терпит крушение во всех общественных и творческих начинаниях...`
+    }
+  ];
+
+  localStorage.setItem(K.DATA, JSON.stringify({shows}));
+}
+
+function loadData(){
+  return JSON.parse(localStorage.getItem(K.DATA));
+}
+
+function getHiddenDays(){
+  return JSON.parse(localStorage.getItem(K.HIDDEN_DAYS) || "[]");
+}
+
+function formatDateRU(d){
+  const dd=String(d.getDate()).padStart(2,"0");
+  const mm=String(d.getMonth()+1).padStart(2,"0");
+  const yyyy=d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+
+function pickShowDateForList(showId){
+  // выбираем ближайшую доступную дату (не скрытую) для отображения на карточке
+  const {start, end} = todayRangeToEndOfMonth();
+  const hidden = new Set(getHiddenDays());
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const key = `${showId}|${d.toISOString().slice(0,10)}`;
+    if(!hidden.has(key)) return new Date(d);
+  }
+  return null;
+}
+
+function render(){
+  const bal = Number(localStorage.getItem(K.BAL) || "0");
+  document.getElementById("bal").textContent = rub(bal);
+
+  const {shows} = loadData();
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  shows.forEach(s=>{
+    const dt = pickShowDateForList(s.id);
+    // если у спектакля все даты скрыты — не показываем его
+    if(!dt) return;
+
+    const card = document.createElement("div");
+    card.className="item";
+    card.innerHTML = `
+      <div class="poster">
+        <img alt="" src="${s.poster}">
+      </div>
+      <div>
+        <div class="title">${s.title}</div>
+        <div class="meta">${s.city}, <span>${formatDateRU(dt)},</span></div>
+        <a class="buy" href="show.html?id=${encodeURIComponent(s.id)}">Купить</a>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  if(!list.children.length){
+    list.innerHTML = `<div style="padding:22px;color:#6b7280">На этот месяц нет доступных дат (возможно, всё скрыто в админке).</div>`;
+  }
+}
+
+/** SUPPORT BOT */
+const chat = document.getElementById("chat");
+const body = document.getElementById("chatBody");
+function addMsg(text, who="bot"){
+  const div=document.createElement("div");
+  div.className="msg "+(who==="me"?"me":"bot");
+  div.textContent=text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function botReply(q){
+  const t = q.toLowerCase();
+  if(t.includes("как купить")) return "Выберите спектакль → дату → места на схеме → заполните ФИО/телефон/email → оплатите с кошелька.";
+  if(t.includes("не проходит")) return "Проверьте баланс в «Кошельке». Если не хватает — пополните. Если всё равно не получается — оставьте заявку.";
+  if(t.includes("возврат")) return "Для возврата оставьте заявку: напишите номер телефона и дату спектакля. Мы свяжемся.";
+  if(t.includes("заявк")) return "Напишите: ФИО, телефон, кратко проблему. Я сохраню заявку.";
+  return "Понял. Напишите чуть подробнее — я помогу 🙂";
+}
+function saveTicket(text){
+  const arr = JSON.parse(localStorage.getItem(K.SUPPORT) || "[]");
+  arr.push({ts:Date.now(), text});
+  localStorage.setItem(K.SUPPORT, JSON.stringify(arr));
+}
+
+document.getElementById("supportBtn").onclick = ()=>{
+  chat.style.display = (chat.style.display==="none" || !chat.style.display) ? "block" : "none";
+  if(!body.children.length){
+    addMsg("Здравствуйте! Я support. Чем помочь?");
+  }
+};
+document.getElementById("chatClose").onclick = ()=> chat.style.display="none";
+document.getElementById("chatSend").onclick = ()=>{
+  const inp=document.getElementById("chatInput");
+  const q=inp.value.trim();
+  if(!q) return;
+  addMsg(q,"me");
+  inp.value="";
+  const a = botReply(q);
+  addMsg(a,"bot");
+  if(q.toLowerCase().includes("заявк") || q.toLowerCase().includes("фио") || q.toLowerCase().includes("тел")){
+    saveTicket(q);
+  }
+};
+document.getElementById("chatInput").addEventListener("keydown",(e)=>{
+  if(e.key==="Enter") document.getElementById("chatSend").click();
+});
+document.querySelectorAll(".quick button").forEach(b=>{
+  b.onclick=()=>{
+    const q=b.dataset.q;
+    document.getElementById("chatInput").value=q;
+    document.getElementById("chatSend").click();
+  };
+});
+
+/** INIT */
+resetIfNewMonth();
+seedDataIfMissing();
+render();
+</script>
+</body>
+</html>
