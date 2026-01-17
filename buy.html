@@ -31,44 +31,32 @@
     .legend{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     .lg{display:flex;gap:10px;align-items:center;font-weight:800}
     .sq{width:18px;height:18px;border-radius:2px;background:#999}
-    .hallTitle{
-      margin:0; padding:18px 16px;
-      text-align:center; color:#fff;
-      background:linear-gradient(180deg,#1a1a1b,#000);
-      font-weight:900; font-size:26px;
-    }
-    .hall{padding:18px 16px 8px; background:#fff;}
+    .hallTitle{margin:0;padding:18px 16px;text-align:center;color:#fff;background:linear-gradient(180deg,#1a1a1b,#000);font-weight:900;font-size:26px}
+    .hall{padding:18px 16px 8px;background:#fff;}
     .rows{display:flex;flex-direction:column;gap:12px;align-items:center}
     .row{display:flex;gap:10px;align-items:center}
     .rowNum{width:22px;text-align:right;font-weight:900;color:#111}
     .seats{display:flex;gap:8px;flex-wrap:nowrap}
     .seat{
-      width:28px;height:28px;border-radius:2px;
-      background:var(--seat); color:var(--seatText);
-      display:grid;place-items:center;
-      font-size:12px;font-weight:900;
-      user-select:none;
-      cursor:pointer;
+      width:28px;height:28px;border-radius:2px;background:var(--seat);color:var(--seatText);
+      display:grid;place-items:center;font-size:12px;font-weight:900;user-select:none;cursor:pointer;
       box-shadow:0 2px 0 rgba(0,0,0,.12);
       transition:transform .05s ease, filter .08s ease;
     }
     .seat:active{transform:scale(.98)}
-    .seat.sold{background:var(--sold); color:#6b7280; cursor:not-allowed; box-shadow:none}
-    .seat.sel{outline:3px solid var(--selOutline); outline-offset:1px}
+    .seat.sold{background:var(--sold);color:#6b7280;cursor:not-allowed;box-shadow:none}
+    .seat.sel{outline:3px solid var(--selOutline);outline-offset:1px}
     .seat.p2500{background:var(--price1)}
     .seat.p3500{background:var(--price2)}
     .seat.p5000{background:var(--price3)}
     .seat.p5500{background:var(--price4)}
-    .stage{margin:14px 16px 12px; border-radius:12px; background:linear-gradient(180deg,#1a1a1b,#000); color:#fff;
-      text-align:center; font-weight:900; font-size:34px; padding:18px 12px}
+    .stage{margin:14px 16px 12px;border-radius:12px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;text-align:center;font-weight:900;font-size:34px;padding:18px 12px}
     .footer{padding:14px 16px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 240px;gap:12px;align-items:center}
     .total{font-size:44px;font-weight:900}
     .buyBtn{height:70px;border:none;border-radius:12px;background:linear-gradient(180deg,#1a1a1b,#000);color:#fff;font-weight:900;font-size:22px;cursor:pointer;box-shadow:0 16px 30px rgba(0,0,0,.18)}
     .form{padding:14px 16px 18px;border-top:1px solid var(--line);background:#fff}
     .field{display:flex;flex-direction:column;gap:8px;margin:10px 0}
-    .field input{
-      padding:16px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px;font-weight:700;outline:none;background:#fff
-    }
+    .field input{padding:16px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px;font-weight:700;outline:none;background:#fff}
     .hint{color:var(--muted);font-weight:700;font-size:13px;margin-top:8px}
     @media(max-width:720px){
       .footer{grid-template-columns:1fr 160px}
@@ -102,243 +90,4 @@
       <div class="lg"><span class="sq" style="background:var(--price1)"></span> 2500 руб.</div>
       <div class="lg"><span class="sq" style="background:var(--price2)"></span> 3500 руб.</div>
       <div class="lg"><span class="sq" style="background:var(--price3)"></span> 5000 руб.</div>
-      <div class="lg"><span class="sq" style="background:var(--price4)"></span> 5500 руб.</div>
-    </div>
-
-    <div class="hallTitle">Схема зала</div>
-
-    <div class="hall">
-      <div class="rows" id="rows"></div>
-    </div>
-
-    <div class="stage">Сцена</div>
-
-    <div class="footer">
-      <div class="total" id="total">Всего: 0 руб.</div>
-      <button class="buyBtn" id="buy">Купить</button>
-    </div>
-
-    <div class="form">
-      <div class="field">
-        <input id="venue" readonly>
-      </div>
-      <div class="field">
-        <input id="datetime" readonly>
-      </div>
-      <div class="field">
-        <input id="fio" placeholder="ФИО">
-      </div>
-      <div class="field">
-        <input id="phone" placeholder="Ваш телефон">
-      </div>
-      <div class="field">
-        <input id="email" placeholder="E-mail">
-      </div>
-      <div class="hint">Оплата проходит через виртуальный счёт (кошелёк). Если не хватает — пополните.</div>
-    </div>
-  </div>
-</div>
-
-<script>
-const K = {
-  DATA:"THEATRE_DATA_V1",
-  BAL:"THEATRE_BALANCE_V1",
-  BOOKINGS:"THEATRE_BOOKINGS_V1"
-};
-
-function rub(n){ return (n||0).toLocaleString("ru-RU"); }
-function qs(k){ return new URLSearchParams(location.search).get(k); }
-function isoDateToRu(iso){
-  const [y,m,d]=iso.split("-");
-  return `${d}.${m}.${y}`;
-}
-function loadData(){ return JSON.parse(localStorage.getItem(K.DATA)); }
-function getBal(){ return Number(localStorage.getItem(K.BAL) || "0"); }
-function setBal(v){ localStorage.setItem(K.BAL, String(v)); }
-function getBookings(){ return JSON.parse(localStorage.getItem(K.BOOKINGS) || "{}"); }
-function setBookings(obj){ localStorage.setItem(K.BOOKINGS, JSON.stringify(obj)); }
-
-const id = qs("id");
-const date = qs("date");     // YYYY-MM-DD
-const time = qs("time") || "21:00";
-
-const data = loadData();
-const show = data.shows.find(x=>x.id===id);
-if(!show || !date){
-  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Некорректная ссылка</div>";
-  throw new Error("bad link");
-}
-
-document.title = "Выбор мест — " + show.title;
-document.getElementById("title").textContent = show.title;
-document.getElementById("meta").textContent = `${show.city}, ${isoDateToRu(date)}, ${time}`;
-document.getElementById("venue").value = show.venue;
-document.getElementById("datetime").value = `${isoDateToRu(date)}, ${time}`;
-document.getElementById("back").href = `show.html?id=${encodeURIComponent(show.id)}`;
-document.getElementById("bal").textContent = " " + (getBal().toLocaleString("ru-RU") + " ₽");
-
-/** ЗАЛ: ряды как на скрине (разная длина рядов) */
-const layout = [
-  {row:9, seats:13},
-  {row:8, seats:13},
-  {row:7, seats:16},
-  {row:6, seats:16},
-  {row:5, seats:15},
-  {row:4, seats:15},
-  {row:3, seats:13},
-  {row:2, seats:13},
-  {row:1, seats:13},
-];
-
-/** Цены по зонам: ближе к сцене дороже */
-function priceFor(row, seat){
-  // 1 (ближе к сцене) -> 5500 на краях, 5000/3500/2500 дальше
-  if(row<=1) return (seat===3||seat===4||seat===13) ? 5500 : 2500;
-  if(row===2) return (seat===3||seat===7||seat===9||seat===12||seat===13) ? 3500 : 2500;
-  if(row===3) return (seat===2||seat===8||seat===9) ? 3500 : 2500;
-  if(row===4) return (seat===5||seat===10||seat===11||seat===14) ? 3500 : 2500;
-  if(row===5) return (seat===5||seat===8||seat===13) ? 3500 : 2500;
-  if(row===7) return (seat===2||seat===8) ? 2500 : 0;
-  if(row===8) return (seat===3||seat===9||seat===10) ? 2500 : 0;
-  // default
-  return 0;
-}
-
-/** Цветовой класс по цене */
-function priceClass(p){
-  if(p===2500) return "p2500";
-  if(p===3500) return "p3500";
-  if(p===5000) return "p5000";
-  if(p===5500) return "p5500";
-  return "";
-}
-
-/** Состояние занятости: часть мест занята (рандом + фиксируется бронированием) */
-const perfKey = `${show.id}|${date}|${time}`;
-const bookings = getBookings();
-bookings[perfKey] = bookings[perfKey] || { sold: {} };
-
-// если первый раз открыли — засидим рандомно несколько мест (чтобы не было "всё свободно")
-if(!bookings[perfKey].seeded){
-  bookings[perfKey].seeded = true;
-  layout.forEach(r=>{
-    const count = r.seats;
-    const need = Math.max(1, Math.floor(count * 0.12)); // ~12% занято
-    for(let i=0;i<need;i++){
-      const s = 1 + Math.floor(Math.random()*count);
-      bookings[perfKey].sold[`${r.row}-${s}`] = true;
-    }
-  });
-  setBookings(bookings);
-}
-
-const selected = new Set();
-
-function recompute(){
-  let sum=0;
-  selected.forEach(key=>{
-    const [row,seat]=key.split("-").map(Number);
-    const p = priceFor(row,seat) || 2500;
-    sum+=p;
-  });
-  document.getElementById("total").textContent = `Всего: ${rub(sum)} руб.`;
-  return sum;
-}
-
-function renderSeats(){
-  const rowsEl = document.getElementById("rows");
-  rowsEl.innerHTML = "";
-  const soldMap = bookings[perfKey].sold || {};
-
-  layout.forEach(r=>{
-    const rowEl=document.createElement("div");
-    rowEl.className="row";
-
-    const rowNum=document.createElement("div");
-    rowNum.className="rowNum";
-    rowNum.textContent = r.row;
-    rowEl.appendChild(rowNum);
-
-    const seats=document.createElement("div");
-    seats.className="seats";
-
-    for(let s=1;s<=r.seats;s++){
-      const key=`${r.row}-${s}`;
-      const btn=document.createElement("div");
-      btn.className="seat";
-      btn.textContent = s;
-
-      const p = priceFor(r.row,s);
-      if(p>0) btn.classList.add(priceClass(p));
-
-      const sold = !!soldMap[key];
-      if(sold) btn.classList.add("sold");
-
-      if(selected.has(key)) btn.classList.add("sel");
-
-      btn.onclick=()=>{
-        if(sold) return;
-        if(selected.has(key)) selected.delete(key);
-        else selected.add(key);
-        renderSeats();
-        recompute();
-      };
-
-      seats.appendChild(btn);
-    }
-
-    rowEl.appendChild(seats);
-    rowsEl.appendChild(rowEl);
-  });
-
-  recompute();
-}
-
-renderSeats();
-
-document.getElementById("buy").onclick = ()=>{
-  const sum = recompute();
-  if(sum<=0){ alert("Выберите места."); return; }
-
-  const fio = document.getElementById("fio").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
-  if(!fio || !phone || !email){
-    alert("Заполните ФИО, телефон и E-mail.");
-    return;
-  }
-
-  const bal = getBal();
-  if(bal < sum){
-    const need = sum - bal;
-    const go = confirm(`Не хватает ${need.toLocaleString("ru-RU")} ₽. Открыть «Кошелёк» для пополнения?`);
-    if(go) location.href = "wallet.html";
-    return;
-  }
-
-  // списываем
-  setBal(bal - sum);
-
-  // фиксируем как проданные
-  const b = getBookings();
-  b[perfKey] = b[perfKey] || {sold:{}};
-  selected.forEach(k=> b[perfKey].sold[k]=true);
-
-  // сохраняем билет в историю (простая)
-  b[perfKey].tickets = b[perfKey].tickets || [];
-  const code = "T" + Math.random().toString(36).slice(2,8).toUpperCase();
-  b[perfKey].tickets.push({
-    code, fio, phone, email,
-    seats:[...selected],
-    sum, ts:Date.now()
-  });
-  setBookings(b);
-
-  alert(`Оплачено! Билет: ${code}\nМеста: ${[...selected].join(", ")}\nСумма: ${sum.toLocaleString("ru-RU")} ₽`);
-  selected.clear();
-  document.getElementById("bal").textContent = " " + (getBal().toLocaleString("ru-RU") + " ₽");
-  renderSeats();
-};
-</script>
-</body>
-</html>
+      <div class
