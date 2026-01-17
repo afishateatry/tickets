@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Спектакль</title>
+  <title>О событии</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -28,10 +28,6 @@
     .kv b{font-weight:900}
     .kv div{margin:6px 0}
     .desc{font-size:18px;line-height:1.7;color:#374151;white-space:pre-wrap}
-    .dates{margin:14px 0 8px;display:flex;gap:10px;flex-wrap:wrap}
-    .dateBtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 12px;cursor:pointer;font-weight:900}
-    .dateBtn.active{background:#0b0b0c;color:#fff;border-color:#0b0b0c}
-    .hint{color:var(--muted);font-size:13px;margin-top:8px}
     @media(max-width:560px){
       .head{grid-template-columns:120px 1fr}
       .poster{width:120px;height:120px}
@@ -52,10 +48,10 @@
       <div>
         <div class="h1" id="title">...</div>
         <div class="sub" id="meta">...<span id="venue">...</span></div>
-
-        <div class="dates" id="dates"></div>
         <a class="buy" id="goBuy" href="#">Купить</a>
-        <div class="hint">Выберите дату, затем переходите к схеме зала.</div>
+        <div style="color:#6b7280;font-weight:700;font-size:13px;margin-top:10px">
+          Переход на схему зала → выбор мест → оплата с кошелька
+        </div>
       </div>
     </div>
 
@@ -73,109 +69,54 @@
 </div>
 
 <script>
-const K = { DATA:"THEATRE_DATA_V1", HIDDEN_DAYS:"THEATRE_HIDDEN_DAYS_V1", MONTH:"THEATRE_MONTH_MARK_V1" };
-
-function yyyy_mm(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
-function resetIfNewMonth(){
-  const mark = localStorage.getItem(K.MONTH);
-  const cur = yyyy_mm();
-  if(mark !== cur){
-    localStorage.setItem(K.MONTH, cur);
-    localStorage.removeItem(K.HIDDEN_DAYS);
-  }
-}
-function loadData(){ return JSON.parse(localStorage.getItem(K.DATA)); }
-function getHidden(){ return new Set(JSON.parse(localStorage.getItem(K.HIDDEN_DAYS)||"[]")); }
-
-function todayRangeToEndOfMonth(){
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
-  return {start,end};
-}
-function formatDateRU(d){
-  const dd=String(d.getDate()).padStart(2,"0");
-  const mm=String(d.getMonth()+1).padStart(2,"0");
-  const yyyy=d.getFullYear();
-  return `${dd}.${mm}.${yyyy}`;
-}
-function isoDate(d){ return d.toISOString().slice(0,10); }
-
+const K = { EVENTS:"THEATRE_EVENTS_V2", HIDDEN:"THEATRE_HIDDEN_EVENTS_V2" };
 function qs(k){ return new URLSearchParams(location.search).get(k); }
-
-resetIfNewMonth();
+function formatRU(isoDate){
+  const [y,m,d]=isoDate.split("-");
+  return `${d}.${m}.${y}`;
+}
+function loadEvents(){ return JSON.parse(localStorage.getItem(K.EVENTS)||'{"events":[]}'); }
+function hiddenSet(){ return new Set(JSON.parse(localStorage.getItem(K.HIDDEN)||"[]")); }
 
 const id = qs("id");
-const data = loadData();
-const show = data.shows.find(x=>x.id===id);
-if(!show){
-  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Не найдено</div>";
+const {events} = loadEvents();
+const e = events.find(x=>x.id===id);
+if(!e || hiddenSet().has(e.id)){
+  document.body.innerHTML = "<div style='padding:18px;font-family:Inter'>Событие не найдено или скрыто.</div>";
   throw new Error("not found");
 }
 
-document.title = show.title + " — Театр";
-document.getElementById("poster").src = show.poster;
-document.getElementById("title").textContent = show.title;
-document.getElementById("meta").textContent = `${show.city}`;
-document.getElementById("venue").textContent = show.venue;
+document.title = e.title + " — Театр";
+document.getElementById("poster").src = e.poster;
+document.getElementById("title").textContent = e.title;
+document.getElementById("meta").textContent = `${e.city}, ${formatRU(e.date)}, ${e.time}`;
+document.getElementById("venue").textContent = e.venue;
 
 const aboutEl = document.getElementById("about");
 aboutEl.innerHTML = "";
-Object.entries(show.about).forEach(([k,v])=>{
-  const label = ({
-    director:"Режиссер-постановщик",
-    artist:"Художник-постановщик",
-    producer:"Продюсеры",
-    costume:"Художник по костюмам",
-    music:"Музыкальное оформление",
-    light:"Художник по освещению",
-    ballet:"Балетмейстер",
-    sound:"Звукорежиссер",
-    video:"Видео",
-    assistant:"Помощник режиссера",
-  })[k] || k;
-
-  const row = document.createElement("div");
-  row.innerHTML = `<b>${label}</b> — ${v}`;
+const labels = {
+  director:"Режиссер-постановщик",
+  artist:"Художник-постановщик",
+  producer:"Продюсеры",
+  costume:"Художник по костюмам",
+  music:"Музыкальное оформление",
+  light:"Художник по освещению",
+  ballet:"Балетмейстер",
+  sound:"Звукорежиссер",
+  video:"Видео",
+  assistant:"Помощник режиссера",
+};
+Object.entries(e.about||{}).forEach(([k,v])=>{
+  const row=document.createElement("div");
+  row.innerHTML = `<b>${labels[k]||k}</b> — ${v}`;
   aboutEl.appendChild(row);
 });
 
-const castEl = document.getElementById("cast");
-castEl.innerHTML = show.cast.map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("");
+document.getElementById("cast").innerHTML = (e.cast||[]).map(x=>`<div><b>${x.actor}</b> - ${x.role}</div>`).join("");
+document.getElementById("desc").textContent = e.description || "";
 
-document.getElementById("desc").textContent = show.description;
-
-const hidden = getHidden();
-const {start,end} = todayRangeToEndOfMonth();
-const datesEl = document.getElementById("dates");
-
-let selectedISO = null;
-for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-  const key = `${show.id}|${isoDate(d)}`;
-  if(hidden.has(key)) continue;
-
-  const btn = document.createElement("button");
-  btn.className = "dateBtn";
-  btn.type = "button";
-  btn.textContent = formatDateRU(d);
-  btn.onclick = ()=>{
-    selectedISO = isoDate(d);
-    [...datesEl.querySelectorAll(".dateBtn")].forEach(x=>x.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById("goBuy").href = `buy.html?id=${encodeURIComponent(show.id)}&date=${encodeURIComponent(selectedISO)}&time=21:00`;
-  };
-  datesEl.appendChild(btn);
-
-  if(!selectedISO){
-    // автоселект первой доступной
-    btn.click();
-  }
-}
-
-if(!datesEl.children.length){
-  datesEl.innerHTML = `<div style="color:#6b7280;font-weight:700">Нет доступных дат (всё скрыто).</div>`;
-  document.getElementById("goBuy").style.display="none";
-}
+document.getElementById("goBuy").href =
+  `buy.html?id=${encodeURIComponent(e.id)}`;
 </script>
 </body>
 </html>
